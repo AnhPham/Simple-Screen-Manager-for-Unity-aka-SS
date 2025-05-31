@@ -78,7 +78,8 @@ public class ScreenManager : MonoBehaviour
     private GameObject m_ScreenShieldTop;
     private OnScreenAddedDelegate m_OnScreenAdded;
     private OnScreenChangedDelegate m_OnScreenChanged;
-    private int m_PendingScreens = 0;
+    private int m_PendingToLoadScreens = 0;
+    private int m_LoadingScreens = 0;
     private int m_AnimationPlayingScreens = 0;
     private List<ScreenCoroutine> m_ScreenCoroutines = new List<ScreenCoroutine>();
     private Coroutine m_LoadingCoroutine;
@@ -177,6 +178,7 @@ public class ScreenManager : MonoBehaviour
     /// <returns>The component type T in the screen.</returns>
     public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false) where T : Component
     {
+        instance.m_PendingToLoadScreens++;
         var c = instance.StartCoroutine(instance.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen));
         instance.m_ScreenCoroutines.Add(new ScreenCoroutine(c, screenName));
     }
@@ -458,7 +460,7 @@ public class ScreenManager : MonoBehaviour
         if (m_Instance == null)
             return true;
 
-        return (m_Instance.m_ScreenList.Count <= 0 && m_Instance.m_PendingScreens <= 0 && m_Instance.m_AnimationPlayingScreens <= 0);
+        return (m_Instance.m_ScreenList.Count <= 0 && m_Instance.m_LoadingScreens <= 0 && m_Instance.m_AnimationPlayingScreens <= 0);
     }
 
     /// <summary>
@@ -485,6 +487,18 @@ public class ScreenManager : MonoBehaviour
             return;
 
         m_Instance.HideTooltipImmediately();
+    }
+
+    /// <summary>
+    /// Pending Screens Count
+    /// </summary>
+    /// <returns></returns>
+    public static int PendingScreensCount()
+    {
+        if (m_Instance == null)
+            return 0;
+
+        return m_Instance.m_PendingToLoadScreens;
     }
     #endregion
 
@@ -696,17 +710,17 @@ public class ScreenManager : MonoBehaviour
             yield return 0;
         }
 
-        while (m_PendingScreens > 0 || m_AnimationPlayingScreens > 0)
+        while (m_LoadingScreens > 0 || m_AnimationPlayingScreens > 0)
         {
             yield return 0;
         }
 
-        while (waitUntilNoScreen && (m_PendingScreens > 0 || m_ScreenList.Count > 0))
+        while (waitUntilNoScreen && (m_LoadingScreens > 0 || m_ScreenList.Count > 0))
         {
             yield return 0;
         }
 
-        m_PendingScreens++;
+        m_LoadingScreens++;
 
         m_ScreenShield.name = ScreenShieldName(screenName);
 
@@ -765,13 +779,18 @@ public class ScreenManager : MonoBehaviour
                     screen.gameObject.SetActive(true);
                     PlayAnimation(screen, screen.GetComponent<ScreenController>().showAnimation, 4);
 
-                    m_PendingScreens--;
+                    m_LoadingScreens--;
 
                     var temp = m_ScreenList[i];
                     m_ScreenList[i] = m_ScreenList[m_ScreenList.Count - 1];
                     m_ScreenList[m_ScreenList.Count - 1] = temp;
 
                     onScreenLoad?.Invoke(screen);
+
+                    if (m_PendingToLoadScreens > 0)
+                    {
+                        m_PendingToLoadScreens--;
+                    }
 
                     break;
                 }
@@ -822,6 +841,11 @@ public class ScreenManager : MonoBehaviour
         AddScreenToList(screen);
 
         onScreenLoad?.Invoke(screen);
+
+        if (m_PendingToLoadScreens > 0)
+        {
+            m_PendingToLoadScreens--;
+        }
     }
 
     private void CloseScreen(Callback onScreenClosed = null, string hideAnimation = null)
@@ -864,8 +888,9 @@ public class ScreenManager : MonoBehaviour
             DestroyScreen(screen);
         }
 
-        m_PendingScreens = 0;
+        m_LoadingScreens = 0;
         m_AnimationPlayingScreens = 0;
+        m_PendingToLoadScreens = 0;
     }
 
     private void DestroyScreen()
@@ -1293,7 +1318,7 @@ public class ScreenManager : MonoBehaviour
 
     private void AddScreenToList(Component screen)
     {
-        m_PendingScreens--;
+        m_LoadingScreens--;
 
         m_ScreenList.Add(screen);
 
