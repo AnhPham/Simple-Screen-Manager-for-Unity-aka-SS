@@ -32,18 +32,12 @@ public class ScreenController : MonoBehaviour
         set;
     }
 
-    public bool hasShield
-    {
-        get;
-        set;
-    }
-
     private void OnDestroy()
     {
         if (screen != null)
         {
             ScreenManager.RemoveScreen(screen);
-            ScreenManager.HideShieldOrShowTop(name);
+            ScreenManager.HideShieldOrShowTop(screen);
         }   
     }
 }
