@@ -909,6 +909,7 @@ public class ScreenManager : MonoBehaviour
         controller.showAnimation = showAnimation;
         controller.hideAnimation = hideAnimation;
         controller.animationObjectName = animationObjectName;
+        controller.hasShield = hasShield;
 
         AddAnimations(screen, animationObjectName, showAnimation, hideAnimation);
         PlayAnimation(screen, showAnimation, 4);
@@ -1383,7 +1384,7 @@ public class ScreenManager : MonoBehaviour
             {
                 var higher = m_ScreenContainer.GetChild(childIndex + 1);
                 var higherScreen = higher.GetComponent<ScreenController>();
-                if (higherScreen == null)
+                if (higherScreen == null || !higherScreen.hasShield)
                 {
                     needProcessBelow = true;
                 }

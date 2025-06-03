@@ -32,6 +32,12 @@ public class ScreenController : MonoBehaviour
         set;
     }
 
+    public bool hasShield
+    {
+        get;
+        set;
+    }
+
     private void OnDestroy()
     {
         if (screen != null)
