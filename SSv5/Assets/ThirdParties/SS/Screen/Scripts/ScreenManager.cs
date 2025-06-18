@@ -179,6 +179,7 @@ public class ScreenManager : MonoBehaviour
     /// <param name="addCondition">Only add this screen after this condition return true</param>
     /// <param name="waitUntilNoScreen">Only add this screen when no other screen is showing</param>
     /// <param name="destroyTopScreen">If this is true, destroy the top screen before adding this screen</param>
+    /// <param name="hideTopScreen">If this is true, hide the top screen before adding this screen</param>
     /// <returns>The component type T in the screen.</returns>
     public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
     {
