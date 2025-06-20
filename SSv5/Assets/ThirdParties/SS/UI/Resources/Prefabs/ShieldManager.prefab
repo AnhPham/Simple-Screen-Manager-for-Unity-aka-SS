@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 11903998529241402}
-  - component: {fileID: 8878001875097771627}
+  - component: {fileID: -5501996846034950720}
   m_Layer: 0
-  m_Name: ScreenManager
+  m_Name: ShieldManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8878001875097771627
+--- !u!114 &-5501996846034950720
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,14 +41,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8344229855142392524}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1c0851606ef04b6c91cdb2b3782a082, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d397819de261471996292ca04525099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ScreenPath: Screens
-  m_ScreenAnimationPath: Animations
-  m_LoadingName: 
-  m_TooltipName: 
-  m_ShowAnimationOneTime: 0
-  m_SceneManager: {fileID: 0}
-  m_ShieldManager: {fileID: 0}
+  m_ScreenShieldColor: {r: 0, g: 0, b: 0, a: 0.8}
+  m_CloseOnTappingShield: 0
+  m_ScreenManager: {fileID: 0}
   m_GeneralManager: {fileID: 0}

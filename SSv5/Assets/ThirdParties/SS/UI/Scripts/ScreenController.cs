@@ -48,7 +48,10 @@ namespace SS.UI
 
         private void OnDestroy()
         {
-            screenManager.OnScreenDestroy(screen);
+            if (screenManager != null)
+            {
+                screenManager.OnScreenDestroy(screen);
+            }
         }
     }
 }

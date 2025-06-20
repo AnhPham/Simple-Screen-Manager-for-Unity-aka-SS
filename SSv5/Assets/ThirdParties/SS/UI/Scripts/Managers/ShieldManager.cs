@@ -15,11 +15,9 @@ namespace SS.UI
     {
         #region SerializeField
         [SerializeField] Color m_ScreenShieldColor = new Color(0, 0, 0, 0.8f);
-        [SerializeField] float m_AnimationSpeed = 1;
         [SerializeField] bool m_CloseOnTappingShield = false;
-        [SerializeField] RectTransform m_ScreenContainer;
-        [SerializeField] RectTransform m_TopShieldContainer;
         [SerializeField] ScreenManager m_ScreenManager;
+        [SerializeField] GeneralManager m_GeneralManager;
         #endregion
 
         #region Delegate
@@ -59,11 +57,51 @@ namespace SS.UI
                 m_ScreenManager = value;
             }
         }
+
+        public GeneralManager generalManager
+        {
+            get
+            {
+                return m_GeneralManager;
+            }
+
+            set
+            {
+                m_GeneralManager = value;
+            }
+        }
+
+        public RectTransform screenContainer
+        {
+            get
+            {
+                return m_GeneralManager.screenContainer;
+            }
+        }
+
+        public RectTransform topShieldContainer
+        {
+            get
+            {
+                return m_GeneralManager.topShieldContainer;
+            }
+        }
+
+        public float animationSpeed
+        {
+            get
+            {
+                return m_GeneralManager.animationSpeed;
+            }
+        }
         #endregion
 
         #region Unity Cycle
         private void Awake()
         {
+            DontDestroyOnLoad(gameObject);
+
+            generalManager = FindObjectOfType<GeneralManager>();
             m_TransparentTopShield = CreateTransparentTopShield();
         }
         #endregion
@@ -72,15 +110,14 @@ namespace SS.UI
         #endregion
 
         #region Public Functions
-        public void Setup(Color screenShieldColor, float animationSpeed = 1, bool closeOnTappingShield = false)
+        public void Setup(Color screenShieldColor, bool closeOnTappingShield = false)
         {
             m_ScreenShieldColor = screenShieldColor;
-            Setup(animationSpeed, closeOnTappingShield);
+            Setup(closeOnTappingShield);
         }
 
-        public void Setup(float animationSpeed = 1, bool closeOnTappingShield = false)
+        public void Setup(bool closeOnTappingShield = false)
         {
-            m_AnimationSpeed = animationSpeed;
             m_CloseOnTappingShield = closeOnTappingShield;
         }
 
@@ -97,7 +134,7 @@ namespace SS.UI
 
         public UnscaledAnimation CreateShield(bool showAfterCreate = false)
         {
-            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), m_ScreenContainer).GetComponent<UnscaledAnimation>();
+            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), screenContainer).GetComponent<UnscaledAnimation>();
             shield.name = "Screen Shield";
             shield.transform.SetAsLastSibling();
             shield.gameObject.SetActive(false);
@@ -121,7 +158,7 @@ namespace SS.UI
                 shield.Play("ShieldHide", (anim) => {
                     m_ShieldList.Remove(shield);
                     Destroy(shield.gameObject);
-                }, speed: m_AnimationSpeed);
+                }, speed: animationSpeed);
             }
         }
 
@@ -141,7 +178,7 @@ namespace SS.UI
 
         public GameObject CreateTransparentTopShield()
         {
-            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/TransparentShield"), m_TopShieldContainer.transform);
+            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/TransparentShield"), topShieldContainer.transform);
             shield.name = "Transparent Shield";
 
             var image = shield.GetComponent<Image>();
@@ -165,7 +202,7 @@ namespace SS.UI
                         shield.gameObject.SetActive(true);
                     }
 
-                    shield.Play("ShieldShow", speed: m_AnimationSpeed);
+                    shield.Play("ShieldShow", speed: animationSpeed);
                 }
             }
         }
@@ -178,7 +215,7 @@ namespace SS.UI
 
                 if (shield != null)
                 {
-                    shield.Play("ShieldHide", speed: m_AnimationSpeed);
+                    shield.Play("ShieldHide", speed: animationSpeed);
                 }
             }
         }
@@ -201,7 +238,7 @@ namespace SS.UI
             if (!shield.gameObject.activeInHierarchy || (shield.isPlaying && shield.currentClipName == "ShieldHide"))
             {
                 shield.gameObject.SetActive(true);
-                shield.Play("ShieldShow", speed: m_AnimationSpeed);
+                shield.Play("ShieldShow", speed: animationSpeed);
             }
         }
 

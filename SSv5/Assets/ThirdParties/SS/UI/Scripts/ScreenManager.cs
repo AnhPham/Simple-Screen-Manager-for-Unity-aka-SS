@@ -13,6 +13,9 @@ public class ScreenManager
     private static SS.UI.ScreenManager s_screenManager;
     private static SS.UI.SceneManager s_sceneManager;
     private static SS.UI.ShieldManager s_shieldManager;
+    private static SS.UI.GeneralManager s_generalManager;
+
+    private static bool s_initialized = false;
 
     #region Public Static
     /// <summary>
@@ -24,6 +27,49 @@ public class ScreenManager
         {
             return s_sceneManager.asyncOperation;
         }
+    }
+
+    public static void InitManagers(string generalManagerPath = "Prefabs/GeneralManager", string screenManagerPath = "Prefabs/ScreenManager", string sceneManagerPath = "Prefabs/SceneManager", string shieldManagerPath = "Prefabs/ShieldManager")
+    {
+        if (s_initialized)
+            return;
+
+        s_initialized = true;
+
+        s_generalManager = Object.FindObjectOfType<SS.UI.GeneralManager>();
+        if (s_generalManager == null)
+        {
+            s_generalManager = Object.Instantiate(Resources.Load<SS.UI.GeneralManager>(generalManagerPath));
+        }
+
+        s_screenManager = Object.FindObjectOfType<SS.UI.ScreenManager>();
+        if (s_screenManager == null)
+        {
+            s_screenManager = Object.Instantiate(Resources.Load<SS.UI.ScreenManager>(screenManagerPath));
+        }
+
+        s_sceneManager = Object.FindObjectOfType<SS.UI.SceneManager>();
+        if (s_sceneManager == null)
+        {
+            s_sceneManager = Object.Instantiate(Resources.Load<SS.UI.SceneManager>(sceneManagerPath));
+        }
+
+        s_shieldManager = Object.FindObjectOfType<SS.UI.ShieldManager>();
+        if (s_shieldManager == null)
+        {
+            s_shieldManager = Object.Instantiate(Resources.Load<SS.UI.ShieldManager>(shieldManagerPath));
+        }
+
+        s_screenManager.sceneManager = s_sceneManager;
+        s_screenManager.shieldManager = s_shieldManager;
+        s_screenManager.generalManager = s_generalManager;
+
+        s_sceneManager.screenManager = s_screenManager;
+        s_sceneManager.shieldManager = s_shieldManager;
+        s_sceneManager.generalManager = s_generalManager;
+
+        s_shieldManager.screenManager = s_screenManager;
+        s_shieldManager.generalManager = s_generalManager;
     }
 
     /// <summary>
@@ -41,9 +87,10 @@ public class ScreenManager
     public static void Set(Color screenShieldColor, string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float animationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
     {
         InitManagers();
-        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, animationSpeed, tooltipName, showAnimationOneTime);
-        s_sceneManager.Setup(sceneLoadingName, screenPath, animationSpeed);
-        s_shieldManager.Setup(screenShieldColor, animationSpeed, closeOnTappingShield);
+        s_generalManager.Setup(animationSpeed);
+        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, tooltipName, showAnimationOneTime);
+        s_sceneManager.Setup(sceneLoadingName, screenPath);
+        s_shieldManager.Setup(screenShieldColor, closeOnTappingShield);
     }
 
     /// <summary>
@@ -60,9 +107,10 @@ public class ScreenManager
     public static void Set(string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float animationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
     {
         InitManagers();
-        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, animationSpeed, tooltipName, showAnimationOneTime);
-        s_sceneManager.Setup(sceneLoadingName, screenPath, animationSpeed);
-        s_shieldManager.Setup(animationSpeed, closeOnTappingShield);
+        s_generalManager.Setup(animationSpeed);
+        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, tooltipName, showAnimationOneTime);
+        s_sceneManager.Setup(sceneLoadingName, screenPath);
+        s_shieldManager.Setup(closeOnTappingShield);
     }
 
     /// <summary>
@@ -336,7 +384,7 @@ public class ScreenManager
         if (s_screenManager == null)
             return true;
 
-        return (s_screenManager.screenList.Count <= 0 && s_screenManager.loadingScreens <= 0 && s_screenManager.animationPlayingScreens <= 0);
+        return s_screenManager.IsNoMoreScreen();
     }
 
     /// <summary>
@@ -375,15 +423,6 @@ public class ScreenManager
             return 0;
 
         return s_screenManager.pendingToLoadScreens;
-    }
-    #endregion
-
-    #region Private Static
-    private static void InitManagers()
-    {
-        s_screenManager = Object.Instantiate(Resources.Load<SS.UI.ScreenManager>("Prefabs/ScreenManager"));
-        s_sceneManager = Object.Instantiate(Resources.Load<SS.UI.SceneManager>("Prefabs/SceneManager"));
-        s_shieldManager = Object.Instantiate(Resources.Load<SS.UI.ShieldManager>("Prefabs/ShieldManager"));
     }
     #endregion
 }

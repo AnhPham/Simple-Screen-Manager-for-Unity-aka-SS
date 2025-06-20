@@ -32,6 +32,7 @@ namespace SS.UI
 
     public class ScreenManager : MonoBehaviour
     {
+        #region Sub Class
         public class ScreenCoroutine
         {
             public Coroutine coroutine;
@@ -43,9 +44,6 @@ namespace SS.UI
                 this.screenName = screenName;
             }
         }
-
-        #region Static
-        private static ScreenManager m_Instance;
         #endregion
 
         #region SerializeField
@@ -53,14 +51,10 @@ namespace SS.UI
         [SerializeField] string m_ScreenAnimationPath = "Animations";
         [SerializeField] string m_LoadingName;
         [SerializeField] string m_TooltipName;
-        [SerializeField] float m_AnimationSpeed = 1;
         [SerializeField] bool m_ShowAnimationOneTime = false;
-        [SerializeField] Canvas m_Canvas;
-        [SerializeField] RectTransform m_ScreenContainer;
-        [SerializeField] RectTransform m_TopContainer;
-        [SerializeField] RectTransform m_ScreenLoadingContainer;
         [SerializeField] SceneManager m_SceneManager;
         [SerializeField] ShieldManager m_ShieldManager;
+        [SerializeField] GeneralManager m_GeneralManager;
         #endregion
 
         #region Delegate
@@ -115,6 +109,19 @@ namespace SS.UI
             }
         }
 
+        public GeneralManager generalManager
+        {
+            get
+            {
+                return m_GeneralManager;
+            }
+
+            set
+            {
+                m_GeneralManager = value;
+            }
+        }
+
         public int pendingToLoadScreens
         {
             get
@@ -136,11 +143,19 @@ namespace SS.UI
             }
         }
 
+        public Canvas canvas
+        {
+            get
+            {
+                return m_GeneralManager.canvas;
+            }
+        }
+
         public RectTransform screenContainer
         {
             get
             {
-                return m_ScreenContainer;
+                return m_GeneralManager.screenContainer;
             }
         }
 
@@ -148,7 +163,15 @@ namespace SS.UI
         {
             get
             {
-                return m_TopContainer;
+                return m_GeneralManager.topContainer;
+            }
+        }
+
+        public RectTransform screenLoadingContainer
+        {
+            get
+            {
+                return m_GeneralManager.screenLoadingContainer;
             }
         }
 
@@ -156,47 +179,17 @@ namespace SS.UI
         {
             get
             {
-                return m_AnimationSpeed;
-            }
-        }
-
-        public List<Component> screenList
-        {
-            get
-            {
-                return m_ScreenList;
-            }
-        }
-
-        public int loadingScreens
-        {
-            get
-            {
-                return m_LoadingScreens;
-            }
-        }
-
-        public int animationPlayingScreens
-        {
-            get
-            {
-                return m_AnimationPlayingScreens;
+                return m_GeneralManager.animationSpeed;
             }
         }
         #endregion
 
-        #region Unity Functions
+        #region Unity Cycle
         private void Awake()
         {
-            if (m_Instance != null)
-            {
-                Destroy(gameObject);
-            }
-            else
-            {
-                m_Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
+            DontDestroyOnLoad(gameObject);
+
+            generalManager = FindObjectOfType<GeneralManager>();
         }
 
         private void Update()
@@ -224,18 +217,13 @@ namespace SS.UI
         #endregion
 
         #region Public Functions
-        public void Setup(string screenPath = "Screens", string screenAnimationPath = "Animations", string loadingName = "", float screenAnimationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false)
+        public void Setup(string screenPath = "Screens", string screenAnimationPath = "Animations", string loadingName = "", string tooltipName = "", bool showAnimationOneTime = false)
         {
             m_ScreenPath = screenPath;
             m_ScreenAnimationPath = screenAnimationPath;
             m_LoadingName = loadingName;
             m_TooltipName = tooltipName;
             m_ShowAnimationOneTime = showAnimationOneTime;
-
-            if (screenAnimationSpeed > 0)
-            {
-                m_AnimationSpeed = screenAnimationSpeed;
-            }
         }
 
         public void CloseScreen(Callback onScreenClosed = null, string hideAnimation = null)
@@ -433,17 +421,17 @@ namespace SS.UI
             {
                 screen = existingScreen;
 
-                var screenChildIndex = FindChildIndex(m_ScreenContainer, screen.transform);
+                var screenChildIndex = FindChildIndex(screenContainer, screen.transform);
                 if (screenChildIndex >= 0)
                 {
                     if (screenChildIndex > 0)
                     {
-                        Transform below = m_ScreenContainer.GetChild(screenChildIndex - 1);
+                        Transform below = screenContainer.GetChild(screenChildIndex - 1);
                         Transform above = null;
 
-                        if (screenChildIndex + 1 < m_ScreenContainer.childCount)
+                        if (screenChildIndex + 1 < screenContainer.childCount)
                         {
-                            above = m_ScreenContainer.GetChild(screenChildIndex + 1);
+                            above = screenContainer.GetChild(screenChildIndex + 1);
                         }
 
                         // Check Below, Above
@@ -505,7 +493,7 @@ namespace SS.UI
 
             if (m_Tooltip != null)
             {
-                m_Tooltip.transform.SetParent(m_TopContainer, true);
+                m_Tooltip.transform.SetParent(topContainer, true);
                 m_Tooltip.ShowTooltip(text, worldPosition, targetY);
                 return;
             }
@@ -563,15 +551,20 @@ namespace SS.UI
                 HideScreenShieldOrShowTop(screen);
             }
         }
+
+        public bool IsNoMoreScreen()
+        {
+            return (m_ScreenList.Count <= 0 && m_LoadingScreens <= 0 && m_AnimationPlayingScreens <= 0);
+        }
         #endregion
 
         #region Private Functions
         private void CreateScreen<T>(GameObject prefab, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoad<T> onScreenLoad = null, bool hasShield = true) where T : Component
         {
-            T screen = Instantiate(prefab.GetComponent<T>(), m_ScreenContainer);
+            T screen = Instantiate(prefab.GetComponent<T>(), screenContainer);
 
             screen.name = screenName;
-            AddToContainer(screen.gameObject, m_ScreenContainer);
+            AddToContainer(screen.gameObject, screenContainer);
 
             var controller = AddScreenController(screen);
             controller.screen = screen;
@@ -579,6 +572,7 @@ namespace SS.UI
             controller.hideAnimation = hideAnimation;
             controller.animationObjectName = animationObjectName;
             controller.hasShield = hasShield;
+            controller.screenManager = this;
 
             AddAnimations(screen, animationObjectName, showAnimation, hideAnimation);
             PlayAnimation(screen, showAnimation, 4);
@@ -598,7 +592,7 @@ namespace SS.UI
             m_Loading = Instantiate(prefab);
             m_Loading.name = m_LoadingName;
             m_Loading.SetActive(false);
-            AddToContainer(m_Loading, m_ScreenLoadingContainer);
+            AddToContainer(m_Loading, screenLoadingContainer);
         }
 
         private void ShowLoading(float timeout = 0)
@@ -770,10 +764,10 @@ namespace SS.UI
                 }
 
                 // Play animation
-                unscaledAnim.Play(animationName, speed: m_AnimationSpeed);
+                unscaledAnim.Play(animationName, speed: animationSpeed);
 
                 // Wait animation
-                yield return new WaitForSecondsRealtime(anim[animationName].length / m_AnimationSpeed);
+                yield return new WaitForSecondsRealtime(anim[animationName].length / animationSpeed);
 
                 // Turn off screen shield after animation end
                 shieldManager.transparentTopShield.SetActive(false);
@@ -818,11 +812,11 @@ namespace SS.UI
 
         public void HideScreenShieldOrShowTop(Component screen)
         {
-            var childCount = m_ScreenContainer.childCount;
+            var childCount = screenContainer.childCount;
 
             if (childCount > 0)
             {
-                var childIndex = FindChildIndex(m_ScreenContainer, screen.transform);
+                var childIndex = FindChildIndex(screenContainer, screen.transform);
 
                 if (childIndex < 0)
                 {
@@ -834,7 +828,7 @@ namespace SS.UI
 
                 if (childIndex + 1 < childCount)
                 {
-                    var higher = m_ScreenContainer.GetChild(childIndex + 1);
+                    var higher = screenContainer.GetChild(childIndex + 1);
                     var higherScreen = higher.GetComponent<ScreenController>();
                     if (higherScreen == null || !higherScreen.hasShield)
                     {
@@ -857,7 +851,7 @@ namespace SS.UI
         {
             if (childIndex >= 0 && childIndex < childCount)
             {
-                var top = m_ScreenContainer.GetChild(childIndex);
+                var top = screenContainer.GetChild(childIndex);
                 var topScreen = top.GetComponent<ScreenController>();
 
                 if (topScreen != null)
@@ -890,7 +884,7 @@ namespace SS.UI
 
         private void CreateAndShowTooltip(GameObject tooltipPrefab, string text, Vector3 worldPosition, float targetY)
         {
-            var tooltip = Instantiate(tooltipPrefab, m_TopContainer);
+            var tooltip = Instantiate(tooltipPrefab, topContainer);
             m_Tooltip = tooltip.GetComponent<TooltipBaseController>();
 
             if (m_Tooltip != null)

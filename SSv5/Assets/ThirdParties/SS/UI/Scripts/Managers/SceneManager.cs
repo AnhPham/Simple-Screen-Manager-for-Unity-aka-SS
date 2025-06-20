@@ -18,11 +18,9 @@ namespace SS.UI
         #region SerializeField
         [SerializeField] string m_SceneLoadingPath;
         [SerializeField] string m_SceneLoadingName;
-        [SerializeField] Camera m_BackgroundCamera;
-        [SerializeField] UnscaledAnimation m_SceneShield;
-        [SerializeField] RectTransform m_SceneLoadingContainer;
         [SerializeField] ScreenManager m_ScreenManager;
         [SerializeField] ShieldManager m_ShieldManager;
+        [SerializeField] GeneralManager m_GeneralManager;
         #endregion
 
         #region Delegate
@@ -32,7 +30,6 @@ namespace SS.UI
         #region Private Member
         private Scene m_LastLoadedScene;
         private GameObject m_SceneLoading;
-        private float m_AnimationSpeed = 1f;
         #endregion
 
         #region Get/Set
@@ -75,14 +72,62 @@ namespace SS.UI
                 m_ShieldManager = value;
             }
         }
+
+        public GeneralManager generalManager
+        {
+            get
+            {
+                return m_GeneralManager;
+            }
+
+            set
+            {
+                m_GeneralManager = value;
+            }
+        }
+
+        public Camera backgroundCamera
+        {
+            get
+            {
+                return m_GeneralManager.backgroundCamera;
+            }
+        }
+        public UnscaledAnimation sceneShield
+        {
+            get
+            {
+                return m_GeneralManager.sceneShield;
+            }
+        }
+
+        public RectTransform sceneLoadingContainer
+        {
+            get
+            {
+                return m_GeneralManager.sceneLoadingContainer;
+            }
+        }
+
+        public float animationSpeed
+        {
+            get
+            {
+                return m_GeneralManager.animationSpeed;
+            }
+        }
         #endregion
 
         #region Unity Cycle
         private void Awake()
         {
+            DontDestroyOnLoad(gameObject);
+
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += SceneManager_sceneLoaded;
             UnityEngine.SceneManagement.SceneManager.sceneUnloaded += SceneManager_sceneUnloaded;
+
+            generalManager = FindObjectOfType<GeneralManager>();
 
             SetupCameras();
             SetupCanvases();
@@ -92,7 +137,7 @@ namespace SS.UI
         #region Events
         private void SceneManager_sceneUnloaded(Scene scene)
         {
-            m_BackgroundCamera.gameObject.SetActive(true);
+            backgroundCamera.gameObject.SetActive(true);
         }
 
         private void SceneManager_activeSceneChanged(Scene scene1, Scene scene2)
@@ -109,11 +154,10 @@ namespace SS.UI
         #endregion
 
         #region Public Functions
-        public void Setup(string sceneLoadingName = "", string sceneLoadingPath = "", float animationSpeed = 1)
+        public void Setup(string sceneLoadingName = "", string sceneLoadingPath = "")
         {
             m_SceneLoadingName = sceneLoadingName;
             m_SceneLoadingPath = sceneLoadingPath;
-            m_AnimationSpeed = animationSpeed;
         }
 
         public void LoadScene<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
@@ -125,13 +169,13 @@ namespace SS.UI
         #region Private Functions
         private IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
         {
-            m_SceneShield.transform.SetAsLastSibling();
+            sceneShield.transform.SetAsLastSibling();
 
             if (mode == LoadSceneMode.Single)
             {
-                m_SceneShield.Play("ShieldShow", speed: m_AnimationSpeed);
+                sceneShield.Play("ShieldShow", speed: animationSpeed);
 
-                yield return new WaitForSecondsRealtime(m_SceneShield.GetLength("ShieldShow") / m_AnimationSpeed);
+                yield return new WaitForSecondsRealtime(sceneShield.GetLength("ShieldShow") / animationSpeed);
 
                 if (clearAllScreen)
                 {
@@ -179,7 +223,7 @@ namespace SS.UI
 
             if (mode == LoadSceneMode.Single)
             {
-                m_SceneShield.Play("ShieldHide", speed: m_AnimationSpeed);
+                sceneShield.Play("ShieldHide", speed: animationSpeed);
             }
 
             if (mode == LoadSceneMode.Single && !string.IsNullOrEmpty(m_SceneLoadingName))
@@ -202,7 +246,7 @@ namespace SS.UI
         {
             m_SceneLoading = Instantiate(prefab);
             m_SceneLoading.name = m_SceneLoadingName;
-            AddToContainer(m_SceneLoading, m_SceneLoadingContainer);
+            AddToContainer(m_SceneLoading, sceneLoadingContainer);
         }
 
         private void ShowSceneLoading()
@@ -216,11 +260,11 @@ namespace SS.UI
 
             for (int i = 0; i < cameras.Length; i++)
             {
-                if (cameras[i] != m_BackgroundCamera)
+                if (cameras[i] != backgroundCamera)
                 {
                     if (cameras[i].clearFlags == CameraClearFlags.Skybox || cameras[i].clearFlags == CameraClearFlags.SolidColor)
                     {
-                        m_BackgroundCamera.gameObject.SetActive(false);
+                        backgroundCamera.gameObject.SetActive(false);
                         break;
                     }
                 }

@@ -1,18 +1,41 @@
+/**
+ * @author Anh Pham (Zenga)
+ * @email anhpt.csit@gmail.com, anhpt@zenga.com.vn
+ * @date 2024/03/29
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GeneralManager : MonoBehaviour
+namespace SS.UI
 {
-    // Start is called before the first frame update
-    void Start()
+    public class GeneralManager : MonoBehaviour
     {
-        
-    }
+        #region Public Members
+        public Camera backgroundCamera;
+        public Canvas canvas;
+        public UnscaledAnimation sceneShield;
+        public RectTransform screenContainer;
+        public RectTransform topContainer;
+        public RectTransform screenLoadingContainer;
+        public RectTransform topShieldContainer;
+        public RectTransform sceneLoadingContainer;
+        public float animationSpeed = 1;
+        #endregion
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        #region Unity Cycle
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+        #endregion
+
+        #region Public Methods
+        public void Setup(float animationSpeed)
+        {
+            this.animationSpeed = animationSpeed;
+        }
+        #endregion
     }
 }
