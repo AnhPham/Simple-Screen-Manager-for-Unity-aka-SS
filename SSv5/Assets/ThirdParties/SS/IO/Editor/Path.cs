@@ -1,7 +1,10 @@
-﻿// This code is part of the SS-Scene library, released by Anh Pham (anhpt.csit@gmail.com).
+﻿/**
+ * @author Anh Pham (Zenga)
+ * @email anhpt.csit@gmail.com, anhpt@zenga.com.vn
+ * @date 2024/03/29
+ */
 
 using UnityEngine;
-using System.Collections;
 
 namespace SS.IO
 {
