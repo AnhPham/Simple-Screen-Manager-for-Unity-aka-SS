@@ -7,10 +7,211 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SS.UI
 {
     public class ShieldManager : MonoBehaviour
     {
+        #region SerializeField
+        [SerializeField] Color m_ScreenShieldColor = new Color(0, 0, 0, 0.8f);
+        [SerializeField] float m_AnimationSpeed = 1;
+        [SerializeField] bool m_CloseOnTappingShield = false;
+        [SerializeField] RectTransform m_ScreenContainer;
+        [SerializeField] RectTransform m_TopShieldContainer;
+        [SerializeField] ScreenManager m_ScreenManager;
+        #endregion
+
+        #region Delegate
+        #endregion
+
+        #region Private Member
+        private List<UnscaledAnimation> m_ShieldList = new List<UnscaledAnimation>();
+        private GameObject m_TransparentTopShield;
+        #endregion
+
+        #region Get/Set
+        public GameObject transparentTopShield
+        {
+            get
+            {
+                return m_TransparentTopShield;
+            }
+        }
+
+        public List<UnscaledAnimation> shieldList
+        {
+            get
+            {
+                return m_ShieldList;
+            }
+        }
+
+        public ScreenManager screenManager
+        {
+            get
+            {
+                return m_ScreenManager;
+            }
+
+            set
+            {
+                m_ScreenManager = value;
+            }
+        }
+        #endregion
+
+        #region Unity Cycle
+        private void Awake()
+        {
+            m_TransparentTopShield = CreateTransparentTopShield();
+        }
+        #endregion
+
+        #region Events
+        #endregion
+
+        #region Public Functions
+        public void Setup(Color screenShieldColor, float animationSpeed = 1, bool closeOnTappingShield = false)
+        {
+            m_ScreenShieldColor = screenShieldColor;
+            Setup(animationSpeed, closeOnTappingShield);
+        }
+
+        public void Setup(float animationSpeed = 1, bool closeOnTappingShield = false)
+        {
+            m_AnimationSpeed = animationSpeed;
+            m_CloseOnTappingShield = closeOnTappingShield;
+        }
+
+        public void DestroyShield()
+        {
+            for (int i = 0; i < m_ShieldList.Count; i++)
+            {
+                var shield = m_ShieldList[i];
+                Destroy(shield.gameObject);
+            }
+
+            m_ShieldList.Clear();
+        }
+
+        public UnscaledAnimation CreateShield(bool showAfterCreate = false)
+        {
+            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), m_ScreenContainer).GetComponent<UnscaledAnimation>();
+            shield.name = "Screen Shield";
+            shield.transform.SetAsLastSibling();
+            shield.gameObject.SetActive(false);
+
+            UpdateScreenShieldColor(shield);
+            AddShieldTapEvent(shield);
+            m_ShieldList.Add(shield);
+
+            if (showAfterCreate)
+            {
+                ShowScreenShield(shield);
+            }
+
+            return shield;
+        }
+
+        public void HideScreenShield(UnscaledAnimation shield)
+        {
+            if (shield.gameObject.activeInHierarchy)
+            {
+                shield.Play("ShieldHide", (anim) => {
+                    m_ShieldList.Remove(shield);
+                    Destroy(shield.gameObject);
+                }, speed: m_AnimationSpeed);
+            }
+        }
+
+        public void AddShieldTapEvent(UnscaledAnimation shield)
+        {
+            if (m_CloseOnTappingShield)
+            {
+                var eventTrigger = shield.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+
+                UnityEngine.EventSystems.EventTrigger.Entry entry = new UnityEngine.EventSystems.EventTrigger.Entry();
+                entry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerClick;
+                entry.callback.AddListener((eventData) => { OnShieldTap(); });
+
+                eventTrigger.triggers.Add(entry);
+            }
+        }
+
+        public GameObject CreateTransparentTopShield()
+        {
+            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/TransparentShield"), m_TopShieldContainer.transform);
+            shield.name = "Transparent Shield";
+
+            var image = shield.GetComponent<Image>();
+            image.color = new Color(0, 0, 0, 0);
+
+            shield.SetActive(false);
+
+            return shield;
+        }
+
+        public void ShowShield()
+        {
+            for (int i = 0; i < shieldList.Count; i++)
+            {
+                var shield = shieldList[i];
+
+                if (shield != null)
+                {
+                    if (!shield.gameObject.activeInHierarchy)
+                    {
+                        shield.gameObject.SetActive(true);
+                    }
+
+                    shield.Play("ShieldShow", speed: m_AnimationSpeed);
+                }
+            }
+        }
+
+        public void HideShield()
+        {
+            for (int i = 0; i < shieldList.Count; i++)
+            {
+                var shield = shieldList[i];
+
+                if (shield != null)
+                {
+                    shield.Play("ShieldHide", speed: m_AnimationSpeed);
+                }
+            }
+        }
+        #endregion
+
+        #region Private Functions
+        private void OnShieldTap()
+        {
+            screenManager.CloseScreen();
+        }
+
+        private void UpdateScreenShieldColor(UnscaledAnimation shield)
+        {
+            var image = shield.GetComponent<Image>();
+            image.color = m_ScreenShieldColor;
+        }
+
+        private void ShowScreenShield(UnscaledAnimation shield)
+        {
+            if (!shield.gameObject.activeInHierarchy || (shield.isPlaying && shield.currentClipName == "ShieldHide"))
+            {
+                shield.gameObject.SetActive(true);
+                shield.Play("ShieldShow", speed: m_AnimationSpeed);
+            }
+        }
+
+        private void AddToContainer(GameObject screen, RectTransform container)
+        {
+            screen.transform.SetParent(container);
+            screen.transform.localPosition = Vector3.zero;
+            screen.transform.localScale = Vector3.one;
+            screen.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+        }
+        #endregion
     }
 }

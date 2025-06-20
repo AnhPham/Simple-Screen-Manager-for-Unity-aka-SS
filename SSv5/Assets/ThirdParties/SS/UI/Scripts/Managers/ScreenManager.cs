@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 namespace SS.UI
 {
@@ -47,43 +46,24 @@ namespace SS.UI
 
         #region Static
         private static ScreenManager m_Instance;
-
-        public static ScreenManager instance
-        {
-            get
-            {
-                if (m_Instance == null)
-                {
-                    Instantiate(Resources.Load<ScreenManager>("Prefabs/ScreenManager"));
-                }
-
-                return m_Instance;
-            }
-        }
         #endregion
 
         #region SerializeField
         [SerializeField] string m_ScreenPath = "Screens";
         [SerializeField] string m_ScreenAnimationPath = "Animations";
-        [SerializeField] string m_SceneLoadingName;
         [SerializeField] string m_LoadingName;
         [SerializeField] string m_TooltipName;
-        [SerializeField] Color m_ScreenShieldColor = new Color(0, 0, 0, 0.8f);
-        [SerializeField] float m_ScreenAnimationSpeed = 1;
+        [SerializeField] float m_AnimationSpeed = 1;
         [SerializeField] bool m_ShowAnimationOneTime = false;
-        [SerializeField] bool m_CloseOnTappingShield = false;
-        [SerializeField] Camera m_BackgroundCamera;
         [SerializeField] Canvas m_Canvas;
-        [SerializeField] UnscaledAnimation m_SceneShield;
         [SerializeField] RectTransform m_ScreenContainer;
         [SerializeField] RectTransform m_TopContainer;
         [SerializeField] RectTransform m_ScreenLoadingContainer;
-        [SerializeField] RectTransform m_ScreenShieldTopContainer;
-        [SerializeField] RectTransform m_SceneLoadingContainer;
+        [SerializeField] SceneManager m_SceneManager;
+        [SerializeField] ShieldManager m_ShieldManager;
         #endregion
 
         #region Delegate
-        public delegate void OnSceneLoad<T>(T t);
         public delegate void OnScreenLoad<T>(T t);
         public delegate void Callback();
         public delegate void OnScreenAddedDelegate(string toScreen, string fromScreen, bool manually);
@@ -97,13 +77,9 @@ namespace SS.UI
         #endregion
 
         #region Private Member
-        private Scene m_LastLoadedScene;
         private List<Component> m_ScreenList = new List<Component>();
-        private GameObject m_SceneLoading;
         private GameObject m_Loading;
         private TooltipBaseController m_Tooltip;
-        private List<UnscaledAnimation> m_ShieldList = new List<UnscaledAnimation>();
-        private GameObject m_ScreenShieldTop;
         private int m_PendingToLoadScreens = 0;
         private int m_LoadingScreens = 0;
         private int m_AnimationPlayingScreens = 0;
@@ -113,10 +89,30 @@ namespace SS.UI
         #endregion
 
         #region Public Get/Set
-        public AsyncOperation asyncOperation
+        public SceneManager sceneManager
         {
-            get;
-            protected set;
+            get
+            {
+                return m_SceneManager;
+            }
+
+            set
+            {
+                m_SceneManager = value;
+            }
+        }
+
+        public ShieldManager shieldManager
+        {
+            get
+            {
+                return m_ShieldManager;
+            }
+
+            set
+            {
+                m_ShieldManager = value;
+            }
         }
 
         public int pendingToLoadScreens
@@ -156,19 +152,11 @@ namespace SS.UI
             }
         }
 
-        public List<UnscaledAnimation> shieldList
+        public float animationSpeed
         {
             get
             {
-                return m_ShieldList;
-            }
-        }
-
-        public float screenAnimationSpeed
-        {
-            get
-            {
-                return m_ScreenAnimationSpeed;
+                return m_AnimationSpeed;
             }
         }
 
@@ -208,17 +196,6 @@ namespace SS.UI
             {
                 m_Instance = this;
                 DontDestroyOnLoad(gameObject);
-
-                name = "ScreenManager";
-
-                Application.targetFrameRate = 60;
-
-                UnityEngine.SceneManagement.SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
-                UnityEngine.SceneManagement.SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-                UnityEngine.SceneManagement.SceneManager.sceneUnloaded += SceneManager_sceneUnloaded;
-
-                SetupCameras();
-                SetupCanvases();
             }
         }
 
@@ -244,157 +221,120 @@ namespace SS.UI
                 }
             }
         }
-
-        private void SceneManager_sceneUnloaded(Scene scene)
-        {
-            m_BackgroundCamera.gameObject.SetActive(true);
-        }
-
-        private void SceneManager_activeSceneChanged(Scene scene1, Scene scene2)
-        {
-        }
-
-        private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            SetupCameras();
-            SetupCanvases();
-
-            m_LastLoadedScene = scene;
-        }
         #endregion
 
         #region Public Functions
-        public void Setup(Color screenShieldColor, string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float screenAnimationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
-        {
-            m_ScreenShieldColor = screenShieldColor;
-            Setup(screenPath, screenAnimationPath, sceneLoadingName, loadingName, screenAnimationSpeed, tooltipName, showAnimationOneTime, closeOnTappingShield);
-        }
-
-        public void Setup(string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float screenAnimationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
+        public void Setup(string screenPath = "Screens", string screenAnimationPath = "Animations", string loadingName = "", float screenAnimationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false)
         {
             m_ScreenPath = screenPath;
             m_ScreenAnimationPath = screenAnimationPath;
-            m_SceneLoadingName = sceneLoadingName;
             m_LoadingName = loadingName;
             m_TooltipName = tooltipName;
             m_ShowAnimationOneTime = showAnimationOneTime;
-            m_CloseOnTappingShield = closeOnTappingShield;
 
             if (screenAnimationSpeed > 0)
             {
-                m_ScreenAnimationSpeed = screenAnimationSpeed;
+                m_AnimationSpeed = screenAnimationSpeed;
             }
         }
 
-        public void LoadScene<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
+        public void CloseScreen(Callback onScreenClosed = null, string hideAnimation = null)
         {
-            StartCoroutine(CoLoadScene(sceneName, mode, onSceneLoaded, clearAllScreen));
-        }
-        #endregion
-
-        #region Private Functions
-
-        private void OnShieldTap()
-        {
-            CloseScreen();
-        }
-
-        private IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
-        {
-            m_SceneShield.transform.SetAsLastSibling();
-
-            if (mode == LoadSceneMode.Single)
+            if (m_ScreenList.Count > 0)
             {
-                m_SceneShield.Play("ShieldShow", speed: m_ScreenAnimationSpeed);
+                var screen = m_ScreenList[m_ScreenList.Count - 1];
+                CloseScreen(screen, onScreenClosed, hideAnimation);
+            }
 
-                yield return new WaitForSecondsRealtime(m_SceneShield.GetLength("ShieldShow") / m_ScreenAnimationSpeed);
+            if (m_ShowAnimationOneTime && m_ScreenList.Count > 0)
+            {
+                var topScreen = m_ScreenList[m_ScreenList.Count - 1];
 
-                if (clearAllScreen)
+                if (topScreen != null)
                 {
-                    DestroyShield();
-
-                    ClearAllScreen();
+                    topScreen.gameObject.SetActive(true);
                 }
             }
+        }
 
-            if (mode == LoadSceneMode.Single && !string.IsNullOrEmpty(m_SceneLoadingName))
+        public void CloseScreen(Component screen, Callback onScreenClosed = null, string hideAnimation = null)
+        {
+            if (m_ScreenList.Count > 0)
             {
-                if (m_SceneLoading == null)
+                RemoveScreenFromList(screen);
+
+                hideAnimation = (hideAnimation != null) ? hideAnimation : screen.GetComponent<ScreenController>().hideAnimation;
+                PlayAnimation(screen, hideAnimation, 0, true, onScreenClosed);
+            }
+        }
+
+        public void ClearAllScreen()
+        {
+            while (m_ScreenList.Count > 0)
+            {
+                var screen = m_ScreenList[0];
+                m_ScreenList.RemoveAt(0);
+
+                DestroyScreen(screen);
+            }
+
+            m_LoadingScreens = 0;
+            m_AnimationPlayingScreens = 0;
+            m_PendingToLoadScreens = 0;
+        }
+
+        public void DestroyScreen()
+        {
+            if (m_ScreenList.Count > 0)
+            {
+                var screen = m_ScreenList[m_ScreenList.Count - 1];
+
+                DestroyScreen(screen);
+            }
+        }
+
+        public void DestroyScreen(Component screen)
+        {
+            if (screen != null && screen.gameObject != null)
+            {
+                Destroy(screen.gameObject);
+            }
+        }
+
+        public void ShowLoading(bool isShow, float timeout = 0)
+        {
+            m_IsLoading = isShow;
+            if (isShow)
+            {
+                if (!string.IsNullOrEmpty(m_LoadingName))
                 {
-#if ADDRESSABLE
-                var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_SceneLoadingName);
-                async.Completed += (a => {
-                    if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                    if (m_Loading == null)
                     {
-                        CreateSceneLoading(async.Result);
-                        ShowSceneLoading();
-                    }
-                });
+#if ADDRESSABLE
+                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_LoadingName);
+                        async.Completed += (a => {
+                            if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                            {
+                                CreateLoading(async.Result);
+                                ShowLoading(timeout);
+                            }
+                        });
 #else
-                    var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_SceneLoadingName));
-                    CreateSceneLoading(prefab);
-                    ShowSceneLoading();
+                        var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_LoadingName));
+                        CreateLoading(prefab);
+                        ShowLoading(timeout);
 #endif
-                }
-                else
-                {
-                    ShowSceneLoading();
-                }
-            }
-
-            asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
-            asyncOperation.completed += (asyncOp) =>
-            {
-                onSceneLoaded?.Invoke(GetSceneComponent<T>(instance.m_LastLoadedScene));
-            };
-
-            while (!asyncOperation.isDone)
-            {
-                yield return null;
-            }
-
-            if (mode == LoadSceneMode.Single)
-            {
-                m_SceneShield.Play("ShieldHide", speed: m_ScreenAnimationSpeed);
-            }
-
-            if (mode == LoadSceneMode.Single && !string.IsNullOrEmpty(m_SceneLoadingName))
-            {
-                while (m_SceneLoading == null)
-                {
-                    yield return 0;
+                    }
+                    else
+                    {
+                        ShowLoading(timeout);
+                    }
                 }
             }
-
-            if (m_SceneLoading != null)
+            else
             {
-                yield return 0;
-
-                m_SceneLoading.SetActive(false);
+                HideLoading();
             }
-        }
-
-        public void DestroyShield()
-        {
-            for (int i = 0; i < m_ShieldList.Count; i++)
-            {
-                var shield = m_ShieldList[i];
-                Destroy(shield.gameObject);
-            }
-
-            m_ShieldList.Clear();
-        }
-
-        private void CreateSceneLoading(GameObject prefab)
-        {
-            m_SceneLoading = Instantiate(prefab);
-            m_SceneLoading.name = m_SceneLoadingName;
-            AddToContainer(m_SceneLoading, m_SceneLoadingContainer);
-        }
-
-        private void ShowSceneLoading()
-        {
-            m_SceneLoading.SetActive(true);
         }
 
         public IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
@@ -423,14 +363,7 @@ namespace SS.UI
                 CreateShield(true);
             }
 
-            // Create Shield Top
-            if (m_ScreenShieldTop == null)
-            {
-                m_ScreenShieldTop = CreateTransparentShield();
-                m_ScreenShieldTop.SetActive(false);
-            }
-
-            var fromScreen = m_LastLoadedScene != null ? m_LastLoadedScene.name : string.Empty;
+            var fromScreen = sceneManager.lastLoadedScene != null ? sceneManager.lastLoadedScene.name : string.Empty;
 
             // Check Exist Screen
             var hasExistingScreen = false;
@@ -549,13 +482,13 @@ namespace SS.UI
             if (!hasExistingScreen)
             {
 #if ADDRESSABLE
-            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
-            async.Completed += (a => {
-                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                {
-                    CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
-                }
-            });
+                var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
+                async.Completed += (a => {
+                    if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                    {
+                        CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
+                    }
+                });
 #else
                 var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, screenName));
                 CreateScreen<T>(prefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
@@ -565,6 +498,74 @@ namespace SS.UI
             OnScreenAdded?.Invoke(screenName, fromScreen, manually);
         }
 
+        public void LoadAndShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
+        {
+            if (string.IsNullOrEmpty(m_TooltipName))
+                return;
+
+            if (m_Tooltip != null)
+            {
+                m_Tooltip.transform.SetParent(m_TopContainer, true);
+                m_Tooltip.ShowTooltip(text, worldPosition, targetY);
+                return;
+            }
+
+#if ADDRESSABLE
+            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_TooltipName);
+            async.Completed += (a => {
+                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                {
+                    CreateAndShowTooltip(async.Result, text, worldPosition, targetY);
+                }
+            });
+#else
+            var tooltipPrefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_TooltipName));
+            CreateAndShowTooltip(tooltipPrefab, text, worldPosition, targetY);
+#endif
+        }
+
+        public void HideTooltipImmediately()
+        {
+            if (m_Tooltip != null)
+            {
+                m_Tooltip.HideToolTip();
+            }
+        }
+
+        public void AddToContainer(GameObject screen, RectTransform container)
+        {
+            screen.transform.SetParent(container);
+            screen.transform.localPosition = Vector3.zero;
+            screen.transform.localScale = Vector3.one;
+            screen.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+        }
+
+        public void StopAllAddScreenCoroutines()
+        {
+            for (int i = 0; i < screenCoroutines.Count; i++)
+            {
+                var sc = screenCoroutines[i];
+                if (sc != null && sc.coroutine != null)
+                {
+                    StopCoroutine(sc.coroutine);
+                    sc.coroutine = null;
+                    Debug.LogWarning("CM: StopCoroutine " + sc.screenName.ToString());
+                }
+            }
+            screenCoroutines.Clear();
+        }
+
+        public void OnScreenDestroy(Component screen)
+        {
+            if (screen != null)
+            {
+                RemoveScreenFromList(screen);
+                HideScreenShieldOrShowTop(screen);
+            }
+        }
+        #endregion
+
+        #region Private Functions
         private void CreateScreen<T>(GameObject prefab, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoad<T> onScreenLoad = null, bool hasShield = true) where T : Component
         {
             T screen = Instantiate(prefab.GetComponent<T>(), m_ScreenContainer);
@@ -589,105 +590,6 @@ namespace SS.UI
             if (m_PendingToLoadScreens > 0)
             {
                 m_PendingToLoadScreens--;
-            }
-        }
-
-        public void CloseScreen(Callback onScreenClosed = null, string hideAnimation = null)
-        {
-            if (m_ScreenList.Count > 0)
-            {
-                var screen = m_ScreenList[m_ScreenList.Count - 1];
-                CloseScreen(screen, onScreenClosed, hideAnimation);
-            }
-
-            if (m_ShowAnimationOneTime && m_ScreenList.Count > 0)
-            {
-                var topScreen = m_ScreenList[m_ScreenList.Count - 1];
-
-                if (topScreen != null)
-                {
-                    topScreen.gameObject.SetActive(true);
-                }
-            }
-        }
-
-        public void CloseScreen(Component screen, Callback onScreenClosed = null, string hideAnimation = null)
-        {
-            if (m_ScreenList.Count > 0)
-            {
-                RemoveScreenFromList(screen);
-
-                hideAnimation = (hideAnimation != null) ? hideAnimation : screen.GetComponent<ScreenController>().hideAnimation;
-                PlayAnimation(screen, hideAnimation, 0, true, onScreenClosed);
-            }
-        }
-
-        public void ClearAllScreen()
-        {
-            while (m_ScreenList.Count > 0)
-            {
-                var screen = m_ScreenList[0];
-                m_ScreenList.RemoveAt(0);
-
-                DestroyScreen(screen);
-            }
-
-            m_LoadingScreens = 0;
-            m_AnimationPlayingScreens = 0;
-            m_PendingToLoadScreens = 0;
-        }
-
-        public void DestroyScreen()
-        {
-            if (m_ScreenList.Count > 0)
-            {
-                var screen = m_ScreenList[m_ScreenList.Count - 1];
-
-                DestroyScreen(screen);
-            }
-        }
-
-        public void DestroyScreen(Component screen)
-        {
-            if (screen != null && screen.gameObject != null)
-            {
-                Destroy(screen.gameObject);
-            }
-        }
-
-        public void ShowLoading(bool isShow, float timeout = 0)
-        {
-            m_IsLoading = isShow;
-            if (isShow)
-            {
-                if (!string.IsNullOrEmpty(m_LoadingName))
-                {
-                    if (m_Loading == null)
-                    {
-#if ADDRESSABLE
-                    var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_LoadingName);
-                    async.Completed += (a => {
-                        if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                        {
-                            CreateLoading(async.Result);
-                            ShowLoading(timeout);
-                        }
-                    });
-#else
-                        var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_LoadingName));
-                        CreateLoading(prefab);
-                        ShowLoading(timeout);
-#endif
-                    }
-                    else
-                    {
-                        ShowLoading(timeout);
-                    }
-                }
-            }
-            else
-            {
-                HideLoading();
             }
         }
 
@@ -744,82 +646,14 @@ namespace SS.UI
             m_Loading.SetActive(false);
         }
 
-        public void AddToContainer(GameObject screen, RectTransform container)
-        {
-            screen.transform.SetParent(container);
-            screen.transform.localPosition = Vector3.zero;
-            screen.transform.localScale = Vector3.one;
-            screen.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-        }
-
         private UnscaledAnimation CreateShield(bool showAfterCreate = false)
         {
-            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), m_ScreenContainer).GetComponent<UnscaledAnimation>();
-            shield.name = "Screen Shield";
-            shield.transform.SetAsLastSibling();
-            shield.gameObject.SetActive(false);
-
-            UpdateScreenShieldColor(shield);
-            AddShieldTapEvent(shield);
-            m_ShieldList.Add(shield);
-
-            if (showAfterCreate)
-            {
-                ShowScreenShield(shield);
-            }
-
-            return shield;
-        }
-
-        private void UpdateScreenShieldColor(UnscaledAnimation shield)
-        {
-            var image = shield.GetComponent<Image>();
-            image.color = instance.m_ScreenShieldColor;
-        }
-
-        private void ShowScreenShield(UnscaledAnimation shield)
-        {
-            if (!shield.gameObject.activeInHierarchy || (shield.isPlaying && shield.currentClipName == "ShieldHide"))
-            {
-                shield.gameObject.SetActive(true);
-                shield.Play("ShieldShow", speed: m_ScreenAnimationSpeed);
-            }
+            return shieldManager.CreateShield(showAfterCreate);
         }
 
         private void HideScreenShield(UnscaledAnimation shield)
         {
-            if (shield.gameObject.activeInHierarchy)
-            {
-                shield.Play("ShieldHide", (anim) => {
-                    m_ShieldList.Remove(shield);
-                    Destroy(shield.gameObject);
-                }, speed: m_ScreenAnimationSpeed);
-            }
-        }
-
-        private void AddShieldTapEvent(UnscaledAnimation shield)
-        {
-            if (m_CloseOnTappingShield)
-            {
-                var eventTrigger = shield.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
-
-                UnityEngine.EventSystems.EventTrigger.Entry entry = new UnityEngine.EventSystems.EventTrigger.Entry();
-                entry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerClick;
-                entry.callback.AddListener((eventData) => { OnShieldTap(); });
-
-                eventTrigger.triggers.Add(entry);
-            }
-        }
-
-        private GameObject CreateTransparentShield()
-        {
-            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/TransparentShield"), m_ScreenShieldTopContainer.transform);
-            shield.name = "Transparent Shield";
-
-            var image = shield.GetComponent<Image>();
-            image.color = new Color(0, 0, 0, 0);
-
-            return shield;
+            shieldManager.HideScreenShield(shield);
         }
 
         private Animation AddAnimations(Component screen, string animationObjectName = "", params string[] animationNames)
@@ -916,7 +750,7 @@ namespace SS.UI
             if (anim.GetClip(animationName) != null)
             {
                 // Show screen shield before playing animation
-                m_ScreenShieldTop.SetActive(true);
+                shieldManager.transparentTopShield.SetActive(true);
 
                 // Unscaled anim
                 var unscaledAnim = anim.GetComponent<UnscaledAnimation>();
@@ -936,13 +770,13 @@ namespace SS.UI
                 }
 
                 // Play animation
-                unscaledAnim.Play(animationName, speed: m_ScreenAnimationSpeed);
+                unscaledAnim.Play(animationName, speed: m_AnimationSpeed);
 
                 // Wait animation
-                yield return new WaitForSecondsRealtime(anim[animationName].length / m_ScreenAnimationSpeed);
+                yield return new WaitForSecondsRealtime(anim[animationName].length / m_AnimationSpeed);
 
                 // Turn off screen shield after animation end
-                m_ScreenShieldTop.SetActive(false);
+                shieldManager.transparentTopShield.SetActive(false);
             }
 
             if (screenToBeDestroyed != null)
@@ -965,56 +799,6 @@ namespace SS.UI
             }
 
             return controller;
-        }
-
-        private void SetupCameras()
-        {
-            var cameras = FindObjectsOfType<Camera>();
-
-            for (int i = 0; i < cameras.Length; i++)
-            {
-                if (cameras[i] != m_BackgroundCamera)
-                {
-                    if (cameras[i].clearFlags == CameraClearFlags.Skybox || cameras[i].clearFlags == CameraClearFlags.SolidColor)
-                    {
-                        m_BackgroundCamera.gameObject.SetActive(false);
-                        break;
-                    }
-                }
-            }
-        }
-
-        private void SetupCanvases()
-        {
-            var screenRatio = (float)Screen.width / Screen.height;
-
-            var canvasScalers = FindObjectsOfType<CanvasScaler>(true);
-            for (int i = 0; i < canvasScalers.Length; i++)
-            {
-                SetupCanvasScaler(canvasScalers[i], screenRatio);
-            }
-        }
-
-        private void SetupCanvasScaler(CanvasScaler canvasScaler, float screenRatio)
-        {
-            canvasScaler.matchWidthOrHeight = screenRatio > 0.44f ? 1f : 0f;
-        }
-
-        private T GetSceneComponent<T>(Scene scene) where T : Component
-        {
-            var objects = scene.GetRootGameObjects();
-
-            for (int i = 0; i < objects.Length; i++)
-            {
-                var t = objects[i].GetComponentInChildren<T>();
-
-                if (t != null)
-                {
-                    return t;
-                }
-            }
-
-            return null;
         }
 
         private int FindChildIndex(Transform parent, Transform t)
@@ -1104,25 +888,6 @@ namespace SS.UI
             }
         }
 
-        public void AddScreenToList(Component screen)
-        {
-            m_LoadingScreens--;
-
-            m_ScreenList.Add(screen);
-
-            OnScreenChanged?.Invoke(m_ScreenList.Count);
-        }
-
-        public void RemoveScreenFromList(Component screen)
-        {
-            if (m_ScreenList.Contains(screen))
-            {
-                m_ScreenList.Remove(screen);
-
-                OnScreenChanged?.Invoke(m_ScreenList.Count);
-            }
-        }
-
         private void CreateAndShowTooltip(GameObject tooltipPrefab, string text, Vector3 worldPosition, float targetY)
         {
             var tooltip = Instantiate(tooltipPrefab, m_TopContainer);
@@ -1131,40 +896,6 @@ namespace SS.UI
             if (m_Tooltip != null)
             {
                 m_Tooltip.ShowTooltip(text, worldPosition, targetY);
-            }
-        }
-
-        public void LoadAndShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
-        {
-            if (string.IsNullOrEmpty(m_TooltipName))
-                return;
-
-            if (m_Tooltip != null)
-            {
-                m_Tooltip.transform.SetParent(m_TopContainer, true);
-                m_Tooltip.ShowTooltip(text, worldPosition, targetY);
-                return;
-            }
-
-#if ADDRESSABLE
-            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_TooltipName);
-            async.Completed += (a => {
-                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                {
-                    CreateAndShowTooltip(async.Result, text, worldPosition, targetY);
-                }
-            });
-#else
-            var tooltipPrefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_TooltipName));
-            CreateAndShowTooltip(tooltipPrefab, text, worldPosition, targetY);
-#endif
-        }
-
-        public void HideTooltipImmediately()
-        {
-            if (m_Tooltip != null)
-            {
-                m_Tooltip.HideToolTip();
             }
         }
 
@@ -1190,6 +921,25 @@ namespace SS.UI
             }
 
             return null;
+        }
+
+        private void AddScreenToList(Component screen)
+        {
+            m_LoadingScreens--;
+
+            m_ScreenList.Add(screen);
+
+            OnScreenChanged?.Invoke(m_ScreenList.Count);
+        }
+
+        private void RemoveScreenFromList(Component screen)
+        {
+            if (m_ScreenList.Contains(screen))
+            {
+                m_ScreenList.Remove(screen);
+
+                OnScreenChanged?.Invoke(m_ScreenList.Count);
+            }
         }
         #endregion
     }

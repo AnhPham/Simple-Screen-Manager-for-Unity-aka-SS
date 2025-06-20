@@ -10,6 +10,10 @@ using SS.UI;
 
 public class ScreenManager
 {
+    private static SS.UI.ScreenManager s_screenManager;
+    private static SS.UI.SceneManager s_sceneManager;
+    private static SS.UI.ShieldManager s_shieldManager;
+
     #region Public Static
     /// <summary>
     /// Get the scene loading operation. Can get some values like % progress.
@@ -18,7 +22,7 @@ public class ScreenManager
     {
         get
         {
-            return SS.UI.ScreenManager.instance.asyncOperation;
+            return s_sceneManager.asyncOperation;
         }
     }
 
@@ -30,13 +34,16 @@ public class ScreenManager
     /// <param name="screenAnimationPath">The path (in Resources folder) of screen's animation clips</param>
     /// <param name="sceneLoadingName">The name of the scene loading screen which is put in 'screenPath'. Set it to empty if you do not want to show the loading screen while loading a scene</param>
     /// <param name="loadingName">The name of the loading screen which is put in 'screenPath'. This screen can show/hide on the top of all screens at any time using Loading(bool). Set it to empty if you don't need</param>
-    /// <param name="screenAnimationSpeed">Screen Animation speed</param>
+    /// <param name="animationSpeed">Screen Animation speed</param>
     /// <param name="tooltipName">Tooltip Name</param>
     /// <param name="showAnimationOneTime">Indicate whether a screen play its show animation again when the screen above it closes</param>
     /// <param name="closeOnTappingShield">Indicate whether close the top screen when users tap the shield</param>
-    public static void Set(Color screenShieldColor, string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float screenAnimationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
+    public static void Set(Color screenShieldColor, string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float animationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
     {
-        SS.UI.ScreenManager.instance.Setup(screenShieldColor, screenPath, screenAnimationPath, sceneLoadingName, loadingName, screenAnimationSpeed, tooltipName, showAnimationOneTime, closeOnTappingShield);
+        InitManagers();
+        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, animationSpeed, tooltipName, showAnimationOneTime);
+        s_sceneManager.Setup(sceneLoadingName, screenPath, animationSpeed);
+        s_shieldManager.Setup(screenShieldColor, animationSpeed, closeOnTappingShield);
     }
 
     /// <summary>
@@ -46,13 +53,16 @@ public class ScreenManager
     /// <param name="screenAnimationPath">The path (in Resources folder) of screen's animation clips</param>
     /// <param name="sceneLoadingName">The name of the scene loading screen which is put in 'screenPath'. Set it to empty if you do not want to show the loading screen while loading a scene</param>
     /// <param name="loadingName">The name of the loading screen which is put in 'screenPath'. This screen can show/hide on the top of all screens at any time using Loading(bool). Set it to empty if you don't need</param>
-    /// <param name="screenAnimationSpeed">Screen Animation speed</param>
+    /// <param name="animationSpeed">Screen Animation speed</param>
     /// <param name="tooltipName">Tooltip Name</param>
     /// <param name="showAnimationOneTime">Indicate whether a screen play its show animation again when the screen above it closes</param>
     /// <param name="closeOnTappingShield">Indicate whether close the top screen when users tap the shield</param>
-    public static void Set(string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float screenAnimationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
+    public static void Set(string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float animationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
     {
-        SS.UI.ScreenManager.instance.Setup(screenPath, screenAnimationPath, sceneLoadingName, loadingName, screenAnimationSpeed, tooltipName, showAnimationOneTime, closeOnTappingShield);
+        InitManagers();
+        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, animationSpeed, tooltipName, showAnimationOneTime);
+        s_sceneManager.Setup(sceneLoadingName, screenPath, animationSpeed);
+        s_shieldManager.Setup(animationSpeed, closeOnTappingShield);
     }
 
     /// <summary>
@@ -63,10 +73,10 @@ public class ScreenManager
     /// <param name="mode">The load scene mode. Single or Additive</param>
     /// <param name="onSceneLoaded">The callback when the scene is loaded. [IMPORTANT] It is called after the Awake & OnEnable, before the Start.</param>
     /// <param name="clearAllScreens">Clear all screens when the scene is loaded?</param>
-    public static void Load<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, SS.UI.ScreenManager.OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreens = true) where T : Component
+    public static void Load<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, SS.UI.SceneManager.OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreens = true) where T : Component
     {
         StopAllAddScreenCoroutines();
-        SS.UI.ScreenManager.instance.LoadScene(sceneName, mode, onSceneLoaded, clearAllScreens);
+        s_sceneManager.LoadScene(sceneName, mode, onSceneLoaded, clearAllScreens);
     }
 
     /// <summary>
@@ -88,9 +98,9 @@ public class ScreenManager
     /// <returns>The component type T in the screen.</returns>
     public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
     {
-        SS.UI.ScreenManager.instance.pendingToLoadScreens++;
-        var c = SS.UI.ScreenManager.instance.StartCoroutine(SS.UI.ScreenManager.instance.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
-        SS.UI.ScreenManager.instance.screenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
+        s_screenManager.pendingToLoadScreens++;
+        var c = s_screenManager.StartCoroutine(s_screenManager.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
+        s_screenManager.screenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
     }
 
     /// <summary>
@@ -107,7 +117,7 @@ public class ScreenManager
     /// <param name="screen">The GameObject of screen</param>
     public static void AddToCanvas(GameObject screen)
     {
-        SS.UI.ScreenManager.instance.AddToContainer(screen, SS.UI.ScreenManager.instance.screenContainer);
+        s_screenManager.AddToContainer(screen, s_screenManager.screenContainer);
     }
 
     /// <summary>
@@ -115,7 +125,7 @@ public class ScreenManager
     /// </summary>
     public static void Destroy()
     {
-        SS.UI.ScreenManager.instance.DestroyScreen();
+        s_screenManager.DestroyScreen();
     }
 
     /// <summary>
@@ -124,7 +134,7 @@ public class ScreenManager
     /// <param name="screen">The component in screen which is returned by the Add function.</param>
     public static void Destroy(Component screen)
     {
-        SS.UI.ScreenManager.instance.DestroyScreen(screen);
+        s_screenManager.DestroyScreen(screen);
     }
 
     /// <summary>
@@ -132,7 +142,7 @@ public class ScreenManager
     /// </summary>
     public static void DestroyAll()
     {
-        SS.UI.ScreenManager.instance.ClearAllScreen();
+        s_screenManager.ClearAllScreen();
     }
 
     /// <summary>
@@ -142,7 +152,7 @@ public class ScreenManager
     /// <param name="hideAnimation">The name of animation clip (which is put in 'screenAnimationPath') is used to animate the screen to hide it. If null, the 'hideAnimation' which is declared in the Add function will be used.</param>
     public static void Close(SS.UI.ScreenManager.Callback onScreenClosed = null, string hideAnimation = null)
     {
-        SS.UI.ScreenManager.instance.CloseScreen(onScreenClosed, hideAnimation);
+        s_screenManager.CloseScreen(onScreenClosed, hideAnimation);
     }
 
     /// <summary>
@@ -169,7 +179,7 @@ public class ScreenManager
     /// <param name="hideAnimation">The name of animation clip (which is put in 'screenAnimationPath') is used to animate the screen to hide it. If null, the 'hideAnimation' which is declared in the Add function will be used.</param>
     public static void Close(Component screen, SS.UI.ScreenManager.Callback onScreenClosed = null, string hideAnimation = null)
     {
-        SS.UI.ScreenManager.instance.CloseScreen(screen, onScreenClosed, hideAnimation);
+        s_screenManager.CloseScreen(screen, onScreenClosed, hideAnimation);
     }
 
     /// <summary>
@@ -195,16 +205,7 @@ public class ScreenManager
     /// <param name="timeout">If timeout == 0, no timeout</param>
     public static void Loading(bool isShow, float timeout = 0)
     {
-        SS.UI.ScreenManager.instance.ShowLoading(isShow, timeout);
-    }
-
-    /// <summary>
-    /// Remove a specific screen. But don't use this. We use this for an internal purpose.
-    /// </summary>
-    /// <param name="screen">The component in screen which is returned by Add function.</param>
-    public static void RemoveScreen(Component screen)
-    {
-        SS.UI.ScreenManager.instance.RemoveScreenFromList(screen);
+        s_screenManager.ShowLoading(isShow, timeout);
     }
 
     /// <summary>
@@ -212,9 +213,9 @@ public class ScreenManager
     /// </summary>
     public static void HideShieldOrShowTop(Component screen)
     {
-        if (SS.UI.ScreenManager.instance != null && SS.UI.ScreenManager.instance.isActiveAndEnabled)
+        if (s_screenManager != null && s_screenManager.isActiveAndEnabled)
         {
-            SS.UI.ScreenManager.instance.HideScreenShieldOrShowTop(screen);
+            s_screenManager.HideScreenShieldOrShowTop(screen);
         }
     }
 
@@ -224,9 +225,9 @@ public class ScreenManager
     /// <param name="onScreenAdded"></param>
     public static void AddListener(SS.UI.ScreenManager.OnScreenAddedDelegate onScreenAdded)
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_screenManager != null)
         {
-            SS.UI.ScreenManager.instance.OnScreenAdded += onScreenAdded;
+            s_screenManager.OnScreenAdded += onScreenAdded;
         }
     }
 
@@ -236,9 +237,9 @@ public class ScreenManager
     /// <param name="onScreenTransition"></param>
     public static void RemoveListener(SS.UI.ScreenManager.OnScreenAddedDelegate onScreenTransition)
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_screenManager != null)
         {
-            SS.UI.ScreenManager.instance.OnScreenAdded -= onScreenTransition;
+            s_screenManager.OnScreenAdded -= onScreenTransition;
         }
     }
 
@@ -248,9 +249,9 @@ public class ScreenManager
     /// <param name="onScreenChanged"></param>
     public static void AddListener(SS.UI.ScreenManager.OnScreenChangedDelegate onScreenChanged)
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_screenManager != null)
         {
-            SS.UI.ScreenManager.instance.OnScreenChanged += onScreenChanged;
+            s_screenManager.OnScreenChanged += onScreenChanged;
         }
     }
 
@@ -260,9 +261,9 @@ public class ScreenManager
     /// <param name="onScreenChanged"></param>
     public static void RemoveListener(SS.UI.ScreenManager.OnScreenChangedDelegate onScreenChanged)
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_screenManager != null)
         {
-            SS.UI.ScreenManager.instance.OnScreenChanged -= onScreenChanged;
+            s_screenManager.OnScreenChanged -= onScreenChanged;
         }
     }
 
@@ -273,9 +274,9 @@ public class ScreenManager
     {
         get
         {
-            if (SS.UI.ScreenManager.instance != null)
+            if (s_screenManager != null)
             {
-                return SS.UI.ScreenManager.instance.topContainer;
+                return s_screenManager.topContainer;
             }
 
             return null;
@@ -287,22 +288,9 @@ public class ScreenManager
     /// </summary>
     public static void ShowShield()
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_shieldManager != null)
         {
-            for (int i = 0; i < SS.UI.ScreenManager.instance.shieldList.Count; i++)
-            {
-                var shield = SS.UI.ScreenManager.instance.shieldList[i];
-
-                if (shield != null)
-                {
-                    if (!shield.gameObject.activeInHierarchy)
-                    {
-                        shield.gameObject.SetActive(true);
-                    }
-
-                    shield.Play("ShieldShow", speed: SS.UI.ScreenManager.instance.screenAnimationSpeed);
-                }
-            }
+            s_shieldManager.ShowShield();
         }
     }
 
@@ -311,17 +299,9 @@ public class ScreenManager
     /// </summary>
     public static void HideShield()
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_shieldManager != null)
         {
-            for (int i = 0; i < SS.UI.ScreenManager.instance.shieldList.Count; i++)
-            {
-                var shield = SS.UI.ScreenManager.instance.shieldList[i];
-
-                if (shield != null)
-                {
-                    shield.Play("ShieldHide", speed: SS.UI.ScreenManager.instance.screenAnimationSpeed);
-                }
-            }
+            s_shieldManager.HideShield();
         }
     }
 
@@ -330,15 +310,9 @@ public class ScreenManager
     /// </summary>
     public static void DestroyShield()
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_shieldManager != null)
         {
-            for (int i = 0; i < SS.UI.ScreenManager.instance.shieldList.Count; i++)
-            {
-                var shield = SS.UI.ScreenManager.instance.shieldList[i];
-                Object.Destroy(shield.gameObject);
-            }
-
-            SS.UI.ScreenManager.instance.shieldList.Clear();
+            s_shieldManager.DestroyShield();
         }
     }
 
@@ -347,19 +321,9 @@ public class ScreenManager
     /// </summary>
     public static void StopAllAddScreenCoroutines()
     {
-        if (SS.UI.ScreenManager.instance != null)
+        if (s_screenManager != null)
         {
-            for (int i = 0; i < SS.UI.ScreenManager.instance.screenCoroutines.Count; i++)
-            {
-                var sc = SS.UI.ScreenManager.instance.screenCoroutines[i];
-                if (sc != null && sc.coroutine != null)
-                {
-                    SS.UI.ScreenManager.instance.StopCoroutine(sc.coroutine);
-                    sc.coroutine = null;
-                    Debug.LogWarning("CM: StopCoroutine " + sc.screenName.ToString());
-                }
-            }
-            SS.UI.ScreenManager.instance.screenCoroutines.Clear();
+            s_screenManager.StopAllAddScreenCoroutines();
         }
     }
 
@@ -369,10 +333,10 @@ public class ScreenManager
     /// <returns></returns>
     public static bool IsNoMoreScreen()
     {
-        if (SS.UI.ScreenManager.instance == null)
+        if (s_screenManager == null)
             return true;
 
-        return (SS.UI.ScreenManager.instance.screenList.Count <= 0 && SS.UI.ScreenManager.instance.loadingScreens <= 0 && SS.UI.ScreenManager.instance.animationPlayingScreens <= 0);
+        return (s_screenManager.screenList.Count <= 0 && s_screenManager.loadingScreens <= 0 && s_screenManager.animationPlayingScreens <= 0);
     }
 
     /// <summary>
@@ -384,10 +348,10 @@ public class ScreenManager
     /// <param name="targetY">Target Y</param>
     public static void ShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
     {
-        if (SS.UI.ScreenManager.instance == null)
+        if (s_screenManager == null)
             return;
 
-        SS.UI.ScreenManager.instance.LoadAndShowTooltip(text, worldPosition, targetY);
+        s_screenManager.LoadAndShowTooltip(text, worldPosition, targetY);
     }
 
     /// <summary>
@@ -395,10 +359,10 @@ public class ScreenManager
     /// </summary>
     public static void HideTooltip()
     {
-        if (SS.UI.ScreenManager.instance == null)
+        if (s_screenManager == null)
             return;
 
-        SS.UI.ScreenManager.instance.HideTooltipImmediately();
+        s_screenManager.HideTooltipImmediately();
     }
 
     /// <summary>
@@ -407,10 +371,19 @@ public class ScreenManager
     /// <returns></returns>
     public static int PendingScreensCount()
     {
-        if (SS.UI.ScreenManager.instance == null)
+        if (s_screenManager == null)
             return 0;
 
-        return SS.UI.ScreenManager.instance.pendingToLoadScreens;
+        return s_screenManager.pendingToLoadScreens;
+    }
+    #endregion
+
+    #region Private Static
+    private static void InitManagers()
+    {
+        s_screenManager = Object.Instantiate(Resources.Load<SS.UI.ScreenManager>("Prefabs/ScreenManager"));
+        s_sceneManager = Object.Instantiate(Resources.Load<SS.UI.SceneManager>("Prefabs/SceneManager"));
+        s_shieldManager = Object.Instantiate(Resources.Load<SS.UI.ShieldManager>("Prefabs/ShieldManager"));
     }
     #endregion
 }

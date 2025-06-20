@@ -40,16 +40,15 @@ namespace SS.UI
             set;
         }
 
+        public ScreenManager screenManager
+        {
+            get;
+            set;
+        }
+
         private void OnDestroy()
         {
-            if (screen != null)
-            {
-                if (ScreenManager.instance != null)
-                {
-                    ScreenManager.instance.RemoveScreenFromList(screen);
-                    ScreenManager.instance.HideScreenShieldOrShowTop(screen);
-                }
-            }
+            screenManager.OnScreenDestroy(screen);
         }
     }
 }
