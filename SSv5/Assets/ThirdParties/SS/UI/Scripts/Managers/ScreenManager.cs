@@ -49,11 +49,10 @@ namespace SS.UI
         #region SerializeField
         [SerializeField] string m_ScreenPath = "Screens";
         [SerializeField] string m_ScreenAnimationPath = "Animations";
-        [SerializeField] string m_LoadingName;
-        [SerializeField] string m_TooltipName;
         [SerializeField] bool m_ShowAnimationOneTime = false;
         [SerializeField] SceneManager m_SceneManager;
         [SerializeField] ShieldManager m_ShieldManager;
+        [SerializeField] LoadingManager m_LoadingManager;
         [SerializeField] GeneralManager m_GeneralManager;
         #endregion
 
@@ -72,14 +71,10 @@ namespace SS.UI
 
         #region Private Member
         private List<Component> m_ScreenList = new List<Component>();
-        private GameObject m_Loading;
-        private TooltipBaseController m_Tooltip;
         private int m_PendingToLoadScreens = 0;
         private int m_LoadingScreens = 0;
         private int m_AnimationPlayingScreens = 0;
         private List<ScreenCoroutine> m_ScreenCoroutines = new List<ScreenCoroutine>();
-        private Coroutine m_LoadingCoroutine;
-        private bool m_IsLoading;
         #endregion
 
         #region Public Get/Set
@@ -106,6 +101,19 @@ namespace SS.UI
             set
             {
                 m_ShieldManager = value;
+            }
+        }
+
+        public LoadingManager loadingManager
+        {
+            get
+            {
+                return m_LoadingManager;
+            }
+
+            set
+            {
+                m_LoadingManager = value;
             }
         }
 
@@ -167,14 +175,6 @@ namespace SS.UI
             }
         }
 
-        public RectTransform screenLoadingContainer
-        {
-            get
-            {
-                return m_GeneralManager.screenLoadingContainer;
-            }
-        }
-
         public float animationSpeed
         {
             get
@@ -196,7 +196,7 @@ namespace SS.UI
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                if (m_Loading == null || !m_Loading.activeInHierarchy)
+                if (loadingManager.loadingObject == null || !loadingManager.loadingObject.activeInHierarchy)
                 {
                     if (m_ScreenList.Count > 0)
                     {
@@ -217,12 +217,10 @@ namespace SS.UI
         #endregion
 
         #region Public Functions
-        public void Setup(string screenPath = "Screens", string screenAnimationPath = "Animations", string loadingName = "", string tooltipName = "", bool showAnimationOneTime = false)
+        public void Setup(string screenPath = "Screens", string screenAnimationPath = "Animations", bool showAnimationOneTime = false)
         {
             m_ScreenPath = screenPath;
             m_ScreenAnimationPath = screenAnimationPath;
-            m_LoadingName = loadingName;
-            m_TooltipName = tooltipName;
             m_ShowAnimationOneTime = showAnimationOneTime;
         }
 
@@ -286,42 +284,6 @@ namespace SS.UI
             if (screen != null && screen.gameObject != null)
             {
                 Destroy(screen.gameObject);
-            }
-        }
-
-        public void ShowLoading(bool isShow, float timeout = 0)
-        {
-            m_IsLoading = isShow;
-            if (isShow)
-            {
-                if (!string.IsNullOrEmpty(m_LoadingName))
-                {
-                    if (m_Loading == null)
-                    {
-#if ADDRESSABLE
-                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_LoadingName);
-                        async.Completed += (a => {
-                            if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                            {
-                                CreateLoading(async.Result);
-                                ShowLoading(timeout);
-                            }
-                        });
-#else
-                        var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_LoadingName));
-                        CreateLoading(prefab);
-                        ShowLoading(timeout);
-#endif
-                    }
-                    else
-                    {
-                        ShowLoading(timeout);
-                    }
-                }
-            }
-            else
-            {
-                HideLoading();
             }
         }
 
@@ -486,40 +448,6 @@ namespace SS.UI
             OnScreenAdded?.Invoke(screenName, fromScreen, manually);
         }
 
-        public void LoadAndShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
-        {
-            if (string.IsNullOrEmpty(m_TooltipName))
-                return;
-
-            if (m_Tooltip != null)
-            {
-                m_Tooltip.transform.SetParent(topContainer, true);
-                m_Tooltip.ShowTooltip(text, worldPosition, targetY);
-                return;
-            }
-
-#if ADDRESSABLE
-            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_TooltipName);
-            async.Completed += (a => {
-                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                {
-                    CreateAndShowTooltip(async.Result, text, worldPosition, targetY);
-                }
-            });
-#else
-            var tooltipPrefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, m_TooltipName));
-            CreateAndShowTooltip(tooltipPrefab, text, worldPosition, targetY);
-#endif
-        }
-
-        public void HideTooltipImmediately()
-        {
-            if (m_Tooltip != null)
-            {
-                m_Tooltip.HideToolTip();
-            }
-        }
-
         public void AddToContainer(GameObject screen, RectTransform container)
         {
             screen.transform.SetParent(container);
@@ -585,59 +513,6 @@ namespace SS.UI
             {
                 m_PendingToLoadScreens--;
             }
-        }
-
-        private void CreateLoading(GameObject prefab)
-        {
-            m_Loading = Instantiate(prefab);
-            m_Loading.name = m_LoadingName;
-            m_Loading.SetActive(false);
-            AddToContainer(m_Loading, screenLoadingContainer);
-        }
-
-        private void ShowLoading(float timeout = 0)
-        {
-            if (m_IsLoading)
-            {
-                StopLoadingCoroutine();
-
-                if (timeout > 0)
-                {
-                    m_LoadingCoroutine = StartCoroutine(CoShowLoading(timeout));
-                }
-                else
-                {
-                    m_Loading.SetActive(true);
-                }
-            }
-        }
-
-        private void HideLoading()
-        {
-            StopLoadingCoroutine();
-
-            if (m_Loading != null)
-            {
-                m_Loading.SetActive(false);
-            }
-        }
-
-        private void StopLoadingCoroutine()
-        {
-            if (m_LoadingCoroutine != null)
-            {
-                StopCoroutine(m_LoadingCoroutine);
-                m_LoadingCoroutine = null;
-            }
-        }
-
-        private IEnumerator CoShowLoading(float timeout)
-        {
-            m_Loading.SetActive(true);
-
-            yield return new WaitForSecondsRealtime(timeout);
-
-            m_Loading.SetActive(false);
         }
 
         private UnscaledAnimation CreateShield(bool showAfterCreate = false)
@@ -879,17 +754,6 @@ namespace SS.UI
                         ProcessBelowRecursive(childCount, childIndex - 1);
                     }
                 }
-            }
-        }
-
-        private void CreateAndShowTooltip(GameObject tooltipPrefab, string text, Vector3 worldPosition, float targetY)
-        {
-            var tooltip = Instantiate(tooltipPrefab, topContainer);
-            m_Tooltip = tooltip.GetComponent<TooltipBaseController>();
-
-            if (m_Tooltip != null)
-            {
-                m_Tooltip.ShowTooltip(text, worldPosition, targetY);
             }
         }
 

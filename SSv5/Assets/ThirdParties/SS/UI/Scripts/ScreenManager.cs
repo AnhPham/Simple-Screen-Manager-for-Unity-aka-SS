@@ -10,10 +10,12 @@ using SS.UI;
 
 public class ScreenManager
 {
+    private static SS.UI.GeneralManager s_generalManager;
     private static SS.UI.ScreenManager s_screenManager;
     private static SS.UI.SceneManager s_sceneManager;
     private static SS.UI.ShieldManager s_shieldManager;
-    private static SS.UI.GeneralManager s_generalManager;
+    private static SS.UI.TooltipManager s_tooltipManager;
+    private static SS.UI.LoadingManager s_loadingManager;
 
     private static bool s_initialized = false;
 
@@ -29,7 +31,7 @@ public class ScreenManager
         }
     }
 
-    public static void InitManagers(string generalManagerPath = "Prefabs/GeneralManager", string screenManagerPath = "Prefabs/ScreenManager", string sceneManagerPath = "Prefabs/SceneManager", string shieldManagerPath = "Prefabs/ShieldManager")
+    public static void InitManagers(string generalManagerPath = "Prefabs/GeneralManager", string screenManagerPath = "Prefabs/ScreenManager", string sceneManagerPath = "Prefabs/SceneManager", string shieldManagerPath = "Prefabs/ShieldManager", string tooltipManagerPath = "Prefabs/TooltipManager", string loadingManagerPath = "Prefabs/LoadingManager")
     {
         if (s_initialized)
             return;
@@ -60,8 +62,21 @@ public class ScreenManager
             s_shieldManager = Object.Instantiate(Resources.Load<SS.UI.ShieldManager>(shieldManagerPath));
         }
 
+        s_tooltipManager = Object.FindObjectOfType<SS.UI.TooltipManager>();
+        if (s_tooltipManager == null)
+        {
+            s_tooltipManager = Object.Instantiate(Resources.Load<SS.UI.TooltipManager>(tooltipManagerPath));
+        }
+
+        s_loadingManager = Object.FindObjectOfType<SS.UI.LoadingManager>();
+        if (s_loadingManager == null)
+        {
+            s_loadingManager = Object.Instantiate(Resources.Load<SS.UI.LoadingManager>(loadingManagerPath));
+        }
+
         s_screenManager.sceneManager = s_sceneManager;
         s_screenManager.shieldManager = s_shieldManager;
+        s_screenManager.loadingManager = s_loadingManager;
         s_screenManager.generalManager = s_generalManager;
 
         s_sceneManager.screenManager = s_screenManager;
@@ -70,6 +85,10 @@ public class ScreenManager
 
         s_shieldManager.screenManager = s_screenManager;
         s_shieldManager.generalManager = s_generalManager;
+
+        s_tooltipManager.generalManager = s_generalManager;
+
+        s_loadingManager.generalManager = s_generalManager;
     }
 
     /// <summary>
@@ -88,9 +107,11 @@ public class ScreenManager
     {
         InitManagers();
         s_generalManager.Setup(animationSpeed);
-        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, tooltipName, showAnimationOneTime);
+        s_screenManager.Setup(screenPath, screenAnimationPath, showAnimationOneTime);
         s_sceneManager.Setup(sceneLoadingName, screenPath);
         s_shieldManager.Setup(screenShieldColor, closeOnTappingShield);
+        s_tooltipManager.Setup(tooltipName, screenPath);
+        s_loadingManager.Setup(loadingName, screenPath);
     }
 
     /// <summary>
@@ -108,9 +129,11 @@ public class ScreenManager
     {
         InitManagers();
         s_generalManager.Setup(animationSpeed);
-        s_screenManager.Setup(screenPath, screenAnimationPath, loadingName, tooltipName, showAnimationOneTime);
+        s_screenManager.Setup(screenPath, screenAnimationPath, showAnimationOneTime);
         s_sceneManager.Setup(sceneLoadingName, screenPath);
         s_shieldManager.Setup(closeOnTappingShield);
+        s_tooltipManager.Setup(tooltipName, screenPath);
+        s_loadingManager.Setup(loadingName, screenPath);
     }
 
     /// <summary>
@@ -253,7 +276,7 @@ public class ScreenManager
     /// <param name="timeout">If timeout == 0, no timeout</param>
     public static void Loading(bool isShow, float timeout = 0)
     {
-        s_screenManager.ShowLoading(isShow, timeout);
+        s_loadingManager.ShowLoading(isShow, timeout);
     }
 
     /// <summary>
@@ -396,10 +419,10 @@ public class ScreenManager
     /// <param name="targetY">Target Y</param>
     public static void ShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
     {
-        if (s_screenManager == null)
+        if (s_tooltipManager == null)
             return;
 
-        s_screenManager.LoadAndShowTooltip(text, worldPosition, targetY);
+        s_tooltipManager.LoadAndShowTooltip(text, worldPosition, targetY);
     }
 
     /// <summary>
@@ -407,10 +430,10 @@ public class ScreenManager
     /// </summary>
     public static void HideTooltip()
     {
-        if (s_screenManager == null)
+        if (s_tooltipManager == null)
             return;
 
-        s_screenManager.HideTooltipImmediately();
+        s_tooltipManager.HideTooltipImmediately();
     }
 
     /// <summary>
