@@ -209,7 +209,7 @@ namespace SS.UI
 
         public IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
         {
-            // Wait
+            // Wait conditions
             while (addCondition != null && !addCondition())
             {
                 yield return 0;
@@ -233,6 +233,7 @@ namespace SS.UI
                 CreateShield(true);
             }
 
+            // From screen
             var fromScreen = sceneManager.lastLoadedScene != null ? sceneManager.lastLoadedScene.name : string.Empty;
 
             // Check Exist Screen
@@ -642,14 +643,16 @@ namespace SS.UI
             if (childIndex >= 0 && childIndex < childCount)
             {
                 var top = screenContainer.GetChild(childIndex);
+
                 var topScreen = top.GetComponent<ScreenController>();
 
-                if (topScreen != null)
+                if (topScreen != null && !topScreen.beingDestroyed)
                 {
                     if (!m_ShowAnimationOneTime)
                     {
                         if (topScreen.gameObject != null && !topScreen.gameObject.activeInHierarchy)
                         {
+                            Debug.Log("topScreen: " + topScreen.name);
                             topScreen.gameObject.SetActive(true);
 
                             var topController = topScreen.GetComponent<ScreenController>();
@@ -662,7 +665,7 @@ namespace SS.UI
                 {
                     var shield = top.GetComponent<ShieldController>();
 
-                    if (shield != null)
+                    if (shield != null && !shield.beingDestroyed)
                     {
                         HideScreenShield(shield);
 
