@@ -166,7 +166,7 @@ public class ScreenManager
     /// <param name="destroyTopScreen">If this is true, destroy the top screen before adding this screen</param>
     /// <param name="hideTopScreen">If this is true, hide the top screen before adding this screen</param>
     /// <returns>The component type T in the screen.</returns>
-    public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
+    public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
     {
         s_screenManager.pendingToLoadScreens++;
         var c = s_screenManager.StartCoroutine(s_screenManager.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
@@ -176,7 +176,7 @@ public class ScreenManager
     /// <summary>
     /// Add a screen on top of all screens. Use ScreenAnimation enum instead of string for animations
     /// </summary>
-    public static void Add<T>(string screenName, ScreenAnimation showAnimation, ScreenAnimation hideAnimation, string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoad<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
+    public static void Add<T>(string screenName, ScreenAnimation showAnimation, ScreenAnimation hideAnimation, string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
     {
         Add(screenName, showAnimation.ToString(), hideAnimation.ToString(), animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen);
     }
@@ -220,7 +220,7 @@ public class ScreenManager
     /// </summary>
     /// <param name="onScreenClosed">The callback when the screen is closed. [IMPORTANT] It is called right after the screen is destroyed.</param>
     /// <param name="hideAnimation">The name of animation clip (which is put in 'screenAnimationPath') is used to animate the screen to hide it. If null, the 'hideAnimation' which is declared in the Add function will be used.</param>
-    public static void Close(SS.UI.ScreenManager.Callback onScreenClosed = null, string hideAnimation = null)
+    public static void Close(SS.UI.ScreenManager.OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
     {
         s_screenManager.CloseScreen(onScreenClosed, hideAnimation);
     }
@@ -228,7 +228,7 @@ public class ScreenManager
     /// <summary>
     /// Close the screen which is at the top of all screens. Use ScreenAnimation enum instead of string for animations
     /// </summary>\
-    public static void Close(SS.UI.ScreenManager.Callback onScreenClosed, ScreenAnimation hideAnimation)
+    public static void Close(SS.UI.ScreenManager.OnScreenClosedDelegate onScreenClosed, ScreenAnimation hideAnimation)
     {
         Close(onScreenClosed, hideAnimation.ToString());
     }
@@ -247,7 +247,7 @@ public class ScreenManager
     /// <param name="screen">The component in screen which is returned by the Add function.</param>
     /// <param name="onScreenClosed">The callback when the screen is closed. [IMPORTANT] It is called right after the screen is destroyed.</param>
     /// <param name="hideAnimation">The name of animation clip (which is put in 'screenAnimationPath') is used to animate the screen to hide it. If null, the 'hideAnimation' which is declared in the Add function will be used.</param>
-    public static void Close(Component screen, SS.UI.ScreenManager.Callback onScreenClosed = null, string hideAnimation = null)
+    public static void Close(Component screen, SS.UI.ScreenManager.OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
     {
         s_screenManager.CloseScreen(screen, onScreenClosed, hideAnimation);
     }
@@ -255,7 +255,7 @@ public class ScreenManager
     /// <summary>
     /// Close a specific screen. Use ScreenAnimation enum instead of string for animations
     /// </summary>
-    public static void Close(Component screen, SS.UI.ScreenManager.Callback onScreenClosed, ScreenAnimation hideAnimation)
+    public static void Close(Component screen, SS.UI.ScreenManager.OnScreenClosedDelegate onScreenClosed, ScreenAnimation hideAnimation)
     {
         Close(screen, onScreenClosed, hideAnimation.ToString());
     }
