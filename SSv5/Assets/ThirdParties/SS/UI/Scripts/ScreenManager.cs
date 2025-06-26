@@ -80,7 +80,6 @@ public class ScreenManager
         s_screenManager.generalManager = s_generalManager;
 
         s_sceneManager.screenManager = s_screenManager;
-        s_sceneManager.shieldManager = s_shieldManager;
         s_sceneManager.generalManager = s_generalManager;
 
         s_shieldManager.screenManager = s_screenManager;
@@ -196,7 +195,7 @@ public class ScreenManager
     /// </summary>
     public static void Destroy()
     {
-        s_screenManager.DestroyScreen();
+        s_screenManager.TryDestroyTopScreen();
     }
 
     /// <summary>
@@ -205,7 +204,7 @@ public class ScreenManager
     /// <param name="screen">The component in screen which is returned by the Add function.</param>
     public static void Destroy(Component screen)
     {
-        s_screenManager.DestroyScreen(screen);
+        s_screenManager.TryDestroyScreen(screen);
     }
 
     /// <summary>
@@ -213,7 +212,7 @@ public class ScreenManager
     /// </summary>
     public static void DestroyAll()
     {
-        s_screenManager.ClearAllScreen();
+        s_screenManager.ClearAllScreens();
     }
 
     /// <summary>
@@ -286,7 +285,7 @@ public class ScreenManager
     {
         if (s_screenManager != null && s_screenManager.isActiveAndEnabled)
         {
-            s_screenManager.HideScreenShieldOrShowTop(screen);
+            s_screenManager.RevealUnderlyingScreenOrShield(screen);
         }
     }
 
@@ -383,7 +382,7 @@ public class ScreenManager
     {
         if (s_shieldManager != null)
         {
-            s_shieldManager.DestroyShield();
+            s_shieldManager.DestroyAllShields();
         }
     }
 

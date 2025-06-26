@@ -19,7 +19,6 @@ namespace SS.UI
         [SerializeField] string m_SceneLoadingPath;
         [SerializeField] string m_SceneLoadingName;
         [SerializeField] ScreenManager m_ScreenManager;
-        [SerializeField] ShieldManager m_ShieldManager;
         [SerializeField] GeneralManager m_GeneralManager;
         #endregion
 
@@ -57,19 +56,6 @@ namespace SS.UI
             set
             {
                 m_ScreenManager = value;
-            }
-        }
-
-        public ShieldManager shieldManager
-        {
-            get
-            {
-                return m_ShieldManager;
-            }
-
-            set
-            {
-                m_ShieldManager = value;
             }
         }
 
@@ -179,9 +165,7 @@ namespace SS.UI
 
                 if (clearAllScreen)
                 {
-                    shieldManager.DestroyShield();
-
-                    screenManager.ClearAllScreen();
+                    screenManager.ClearAllScreens();
                 }
             }
 

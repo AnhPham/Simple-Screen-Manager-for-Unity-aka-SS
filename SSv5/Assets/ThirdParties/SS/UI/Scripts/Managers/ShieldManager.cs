@@ -24,7 +24,7 @@ namespace SS.UI
         #endregion
 
         #region Private Member
-        private List<UnscaledAnimation> m_ShieldList = new List<UnscaledAnimation>();
+        private List<ShieldController> m_ShieldList = new List<ShieldController>();
         private GameObject m_TransparentTopShield;
         #endregion
 
@@ -37,7 +37,7 @@ namespace SS.UI
             }
         }
 
-        public List<UnscaledAnimation> shieldList
+        public List<ShieldController> shieldList
         {
             get
             {
@@ -121,7 +121,7 @@ namespace SS.UI
             m_CloseOnTappingShield = closeOnTappingShield;
         }
 
-        public void DestroyShield()
+        public void DestroyAllShields()
         {
             for (int i = 0; i < m_ShieldList.Count; i++)
             {
@@ -132,9 +132,9 @@ namespace SS.UI
             m_ShieldList.Clear();
         }
 
-        public UnscaledAnimation CreateShield(bool showAfterCreate = false)
+        public ShieldController CreateShield(bool showAfterCreate = false)
         {
-            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), screenContainer).GetComponent<UnscaledAnimation>();
+            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), screenContainer).GetComponent<ShieldController>();
             shield.name = "Screen Shield";
             shield.transform.SetAsLastSibling();
             shield.gameObject.SetActive(false);
@@ -151,18 +151,18 @@ namespace SS.UI
             return shield;
         }
 
-        public void HideScreenShield(UnscaledAnimation shield)
+        public void HideScreenShield(ShieldController shield)
         {
             if (shield.gameObject.activeInHierarchy)
             {
-                shield.Play("ShieldHide", (anim) => {
+                shield.unscaledAnimation.Play("ShieldHide", (anim) => {
                     m_ShieldList.Remove(shield);
                     Destroy(shield.gameObject);
                 }, speed: animationSpeed);
             }
         }
 
-        public void AddShieldTapEvent(UnscaledAnimation shield)
+        public void AddShieldTapEvent(ShieldController shield)
         {
             if (m_CloseOnTappingShield)
             {
@@ -202,7 +202,7 @@ namespace SS.UI
                         shield.gameObject.SetActive(true);
                     }
 
-                    shield.Play("ShieldShow", speed: animationSpeed);
+                    shield.unscaledAnimation.Play("ShieldShow", speed: animationSpeed);
                 }
             }
         }
@@ -215,7 +215,7 @@ namespace SS.UI
 
                 if (shield != null)
                 {
-                    shield.Play("ShieldHide", speed: animationSpeed);
+                    shield.unscaledAnimation.Play("ShieldHide", speed: animationSpeed);
                 }
             }
         }
@@ -227,27 +227,19 @@ namespace SS.UI
             screenManager.CloseScreen();
         }
 
-        private void UpdateScreenShieldColor(UnscaledAnimation shield)
+        private void UpdateScreenShieldColor(ShieldController shield)
         {
             var image = shield.GetComponent<Image>();
             image.color = m_ScreenShieldColor;
         }
 
-        private void ShowScreenShield(UnscaledAnimation shield)
+        private void ShowScreenShield(ShieldController shield)
         {
-            if (!shield.gameObject.activeInHierarchy || (shield.isPlaying && shield.currentClipName == "ShieldHide"))
+            if (!shield.gameObject.activeInHierarchy || (shield.unscaledAnimation.isPlaying && shield.unscaledAnimation.currentClipName == "ShieldHide"))
             {
                 shield.gameObject.SetActive(true);
-                shield.Play("ShieldShow", speed: animationSpeed);
+                shield.unscaledAnimation.Play("ShieldShow", speed: animationSpeed);
             }
-        }
-
-        private void AddToContainer(GameObject screen, RectTransform container)
-        {
-            screen.transform.SetParent(container);
-            screen.transform.localPosition = Vector3.zero;
-            screen.transform.localScale = Vector3.one;
-            screen.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
         }
         #endregion
     }

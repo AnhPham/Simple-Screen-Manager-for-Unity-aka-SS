@@ -46,7 +46,7 @@ namespace SS.UI
         }
         #endregion
 
-        #region SerializeField
+        #region Serialize Fields
         [SerializeField] string m_ScreenPath = "Screens";
         [SerializeField] string m_ScreenAnimationPath = "Animations";
         [SerializeField] bool m_ShowAnimationOneTime = false;
@@ -56,139 +56,48 @@ namespace SS.UI
         [SerializeField] GeneralManager m_GeneralManager;
         #endregion
 
-        #region Delegate
+        #region Delegates & Events
         public delegate void OnScreenLoad<T>(T t);
         public delegate void Callback();
         public delegate void OnScreenAddedDelegate(string toScreen, string fromScreen, bool manually);
         public delegate void OnScreenChangedDelegate(int screenCount);
         public delegate bool AddConditionDelegate();
-        #endregion
 
-        #region Events
         public OnScreenAddedDelegate OnScreenAdded;
         public OnScreenChangedDelegate OnScreenChanged;
         #endregion
 
-        #region Private Member
+        #region Private Fields
         private List<Component> m_ScreenList = new List<Component>();
+        private List<ScreenCoroutine> m_ScreenCoroutines = new List<ScreenCoroutine>();
         private int m_PendingToLoadScreens = 0;
         private int m_LoadingScreens = 0;
         private int m_AnimationPlayingScreens = 0;
-        private List<ScreenCoroutine> m_ScreenCoroutines = new List<ScreenCoroutine>();
         #endregion
 
-        #region Public Get/Set
-        public SceneManager sceneManager
-        {
-            get
-            {
-                return m_SceneManager;
-            }
+        #region Public Properties
+        public SceneManager sceneManager { get => m_SceneManager; set => m_SceneManager = value; }
+        public ShieldManager shieldManager { get => m_ShieldManager; set => m_ShieldManager = value; }
+        public LoadingManager loadingManager { get => m_LoadingManager; set => m_LoadingManager = value; }
+        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
+        public int pendingToLoadScreens { get => m_PendingToLoadScreens; set => m_PendingToLoadScreens = value; }
+        public List<ScreenCoroutine> screenCoroutines => m_ScreenCoroutines;
+        public Canvas canvas => m_GeneralManager.canvas;
+        public RectTransform screenContainer => m_GeneralManager.screenContainer;
+        public RectTransform topContainer => m_GeneralManager.topContainer;
+        public float animationSpeed => m_GeneralManager.animationSpeed;
+        #endregion
 
-            set
-            {
-                m_SceneManager = value;
-            }
-        }
-
-        public ShieldManager shieldManager
-        {
-            get
-            {
-                return m_ShieldManager;
-            }
-
-            set
-            {
-                m_ShieldManager = value;
-            }
-        }
-
-        public LoadingManager loadingManager
-        {
-            get
-            {
-                return m_LoadingManager;
-            }
-
-            set
-            {
-                m_LoadingManager = value;
-            }
-        }
-
-        public GeneralManager generalManager
-        {
-            get
-            {
-                return m_GeneralManager;
-            }
-
-            set
-            {
-                m_GeneralManager = value;
-            }
-        }
-
-        public int pendingToLoadScreens
-        {
-            get
-            {
-                return m_PendingToLoadScreens;
-            }
-
-            set
-            {
-                m_PendingToLoadScreens = value;
-            }
-        }
-
-        public List<ScreenCoroutine> screenCoroutines
-        {
-            get
-            {
-                return m_ScreenCoroutines;
-            }
-        }
-
-        public Canvas canvas
-        {
-            get
-            {
-                return m_GeneralManager.canvas;
-            }
-        }
-
-        public RectTransform screenContainer
-        {
-            get
-            {
-                return m_GeneralManager.screenContainer;
-            }
-        }
-
-        public RectTransform topContainer
-        {
-            get
-            {
-                return m_GeneralManager.topContainer;
-            }
-        }
-
-        public float animationSpeed
-        {
-            get
-            {
-                return m_GeneralManager.animationSpeed;
-            }
-        }
+        #region Private Properties
+        private bool IsLoadingVisible() => loadingManager.loadingObject != null && loadingManager.loadingObject.activeInHierarchy;
+        private bool IsAnyScreenActive() => m_ScreenList.Count > 0;
+        private Component GetTopScreen() => m_ScreenList[m_ScreenList.Count - 1];
         #endregion
 
         #region Unity Cycle
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
-
             generalManager = FindObjectOfType<GeneralManager>();
         }
 
@@ -196,23 +105,30 @@ namespace SS.UI
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                if (loadingManager.loadingObject == null || !loadingManager.loadingObject.activeInHierarchy)
-                {
-                    if (m_ScreenList.Count > 0)
-                    {
-                        var screen = m_ScreenList[m_ScreenList.Count - 1];
-
-                        if (screen.TryGetComponent(out IKeyBack keyback))
-                        {
-                            keyback.OnKeyBack();
-                        }
-                        else
-                        {
-                            CloseScreen();
-                        }
-                    }
-                }
+                HandleEscapeKey();
             }
+        }
+        #endregion
+
+        #region Escape Key Logic
+        private void HandleEscapeKey()
+        {
+            if (!IsLoadingVisible() && IsAnyScreenActive())
+            {
+                Component topScreen = GetTopScreen();
+                if (TryHandleKeyBack(topScreen)) return;
+                CloseScreen();
+            }
+        }
+
+        private bool TryHandleKeyBack(Component screen)
+        {
+            if (screen.TryGetComponent(out IKeyBack keyBack))
+            {
+                keyBack.OnKeyBack();
+                return true;
+            }
+            return false;
         }
         #endregion
 
@@ -226,64 +142,68 @@ namespace SS.UI
 
         public void CloseScreen(Callback onScreenClosed = null, string hideAnimation = null)
         {
-            if (m_ScreenList.Count > 0)
+            if (IsAnyScreenActive())
             {
-                var screen = m_ScreenList[m_ScreenList.Count - 1];
-                CloseScreen(screen, onScreenClosed, hideAnimation);
-            }
-
-            if (m_ShowAnimationOneTime && m_ScreenList.Count > 0)
-            {
-                var topScreen = m_ScreenList[m_ScreenList.Count - 1];
+                var topScreen = GetTopScreen();
 
                 if (topScreen != null)
                 {
-                    topScreen.gameObject.SetActive(true);
+                    CloseScreen(topScreen, onScreenClosed, hideAnimation);
                 }
+            }
+
+            // if show animation one time, activate the underlying screen right after close top screen is called, before its hide animation is started 
+            if (m_ShowAnimationOneTime && IsAnyScreenActive())
+            {
+                ActivateTopScreen();
             }
         }
 
         public void CloseScreen(Component screen, Callback onScreenClosed = null, string hideAnimation = null)
         {
-            if (m_ScreenList.Count > 0)
+            if (IsAnyScreenActive())
             {
-                RemoveScreenFromList(screen);
-
                 hideAnimation = (hideAnimation != null) ? hideAnimation : screen.GetComponent<ScreenController>().hideAnimation;
                 PlayAnimation(screen, hideAnimation, 0, true, onScreenClosed);
             }
         }
 
-        public void ClearAllScreen()
+        public void ClearAllScreens()
         {
-            while (m_ScreenList.Count > 0)
+            // Destroy all screens
+            while (IsAnyScreenActive())
             {
-                var screen = m_ScreenList[0];
-                m_ScreenList.RemoveAt(0);
+                var topScreen = GetTopScreen();
 
-                DestroyScreen(screen);
+                // Remove from list before destroying will not triggered OnScreenDestroy
+                RemoveTopScreenFromListInternal();
+
+                DestroyScreenInternal(topScreen);
             }
 
+            // Destroy all shields
+            shieldManager.DestroyAllShields();
+
+            // Reset count variables
             m_LoadingScreens = 0;
             m_AnimationPlayingScreens = 0;
             m_PendingToLoadScreens = 0;
         }
 
-        public void DestroyScreen()
+        public void TryDestroyTopScreen()
         {
-            if (m_ScreenList.Count > 0)
+            if (IsAnyScreenActive())
             {
-                var screen = m_ScreenList[m_ScreenList.Count - 1];
-
-                DestroyScreen(screen);
+                var topScreen = GetTopScreen();
+                DestroyScreenInternal(topScreen);
             }
         }
 
-        public void DestroyScreen(Component screen)
+        public void TryDestroyScreen(Component screen)
         {
             if (screen != null && screen.gameObject != null)
             {
-                Destroy(screen.gameObject);
+                DestroyScreenInternal(screen);
             }
         }
 
@@ -351,7 +271,7 @@ namespace SS.UI
                             {
                                 CreateShield(true);
                             }
-                            DestroyScreen(topScreen);
+                            DestroyScreenInternal(topScreen);
                         }
                         else
                         {
@@ -370,10 +290,6 @@ namespace SS.UI
 
                         fromScreen = topScreen.name;
                     }
-                    else
-                    {
-
-                    }
                 }
             }
 
@@ -388,24 +304,24 @@ namespace SS.UI
                 {
                     if (screenChildIndex > 0)
                     {
-                        Transform below = screenContainer.GetChild(screenChildIndex - 1);
-                        Transform above = null;
+                        Transform underlying = screenContainer.GetChild(screenChildIndex - 1);
+                        Transform overlying = null;
 
                         if (screenChildIndex + 1 < screenContainer.childCount)
                         {
-                            above = screenContainer.GetChild(screenChildIndex + 1);
+                            overlying = screenContainer.GetChild(screenChildIndex + 1);
                         }
 
-                        // Check Below, Above
-                        if (below.GetComponent<ScreenController>() == null)
+                        // Check underlying, overlying screen / shield
+                        if (underlying.GetComponent<ScreenController>() == null)
                         {
-                            if (above == null || above.GetComponent<ScreenController>() == null)
+                            if (overlying == null || overlying.GetComponent<ScreenController>() == null)
                             {
-                                below.transform.SetAsLastSibling();
+                                underlying.transform.SetAsLastSibling();
                             }
                             else
                             {
-                                above.gameObject.SetActive(false);
+                                overlying.gameObject.SetActive(false);
                             }
                         }
                     }
@@ -473,10 +389,9 @@ namespace SS.UI
 
         public void OnScreenDestroy(Component screen)
         {
-            if (screen != null)
+            if (TryRemoveScreenFromList(screen))
             {
-                RemoveScreenFromList(screen);
-                HideScreenShieldOrShowTop(screen);
+                RevealUnderlyingScreenOrShield(screen);
             }
         }
 
@@ -515,12 +430,12 @@ namespace SS.UI
             }
         }
 
-        private UnscaledAnimation CreateShield(bool showAfterCreate = false)
+        private ShieldController CreateShield(bool showAfterCreate = false)
         {
             return shieldManager.CreateShield(showAfterCreate);
         }
 
-        private void HideScreenShield(UnscaledAnimation shield)
+        private void HideScreenShield(ShieldController shield)
         {
             shieldManager.HideScreenShield(shield);
         }
@@ -650,7 +565,7 @@ namespace SS.UI
 
             if (screenToBeDestroyed != null)
             {
-                DestroyScreen(screenToBeDestroyed);
+                DestroyScreenInternal(screenToBeDestroyed);
             }
 
             onAnimationEnd?.Invoke();
@@ -685,7 +600,7 @@ namespace SS.UI
             return -1;
         }
 
-        public void HideScreenShieldOrShowTop(Component screen)
+        public void RevealUnderlyingScreenOrShield(Component screen)
         {
             var childCount = screenContainer.childCount;
 
@@ -698,31 +613,31 @@ namespace SS.UI
                     return;
                 }
 
-                // Check higher screen
-                var needProcessBelow = false;
+                // Check overlying screen
+                var needProcessUnderlying = false;
 
                 if (childIndex + 1 < childCount)
                 {
-                    var higher = screenContainer.GetChild(childIndex + 1);
-                    var higherScreen = higher.GetComponent<ScreenController>();
-                    if (higherScreen == null || !higherScreen.hasShield)
+                    var overlying = screenContainer.GetChild(childIndex + 1);
+                    var overlyingScreen = overlying.GetComponent<ScreenController>();
+                    if (overlyingScreen == null || !overlyingScreen.hasShield)
                     {
-                        needProcessBelow = true;
+                        needProcessUnderlying = true;
                     }
                 }
                 else
                 {
-                    needProcessBelow = true;
+                    needProcessUnderlying = true;
                 }
 
-                if (needProcessBelow)
+                if (needProcessUnderlying)
                 {
-                    ProcessBelowRecursive(childCount, childIndex - 1);
+                    ProcessUnderlyingRecursive(childCount, childIndex - 1);
                 }
             }
         }
 
-        private void ProcessBelowRecursive(int childCount, int childIndex)
+        private void ProcessUnderlyingRecursive(int childCount, int childIndex)
         {
             if (childIndex >= 0 && childIndex < childCount)
             {
@@ -745,13 +660,13 @@ namespace SS.UI
                 }
                 else
                 {
-                    var shield = top.GetComponent<UnscaledAnimation>();
+                    var shield = top.GetComponent<ShieldController>();
 
                     if (shield != null)
                     {
                         HideScreenShield(shield);
 
-                        ProcessBelowRecursive(childCount, childIndex - 1);
+                        ProcessUnderlyingRecursive(childCount, childIndex - 1);
                     }
                 }
             }
@@ -790,14 +705,41 @@ namespace SS.UI
             OnScreenChanged?.Invoke(m_ScreenList.Count);
         }
 
-        private void RemoveScreenFromList(Component screen)
+        private bool TryRemoveScreenFromList(Component screen)
         {
-            if (m_ScreenList.Contains(screen))
+            if (screen != null && m_ScreenList.Contains(screen))
             {
                 m_ScreenList.Remove(screen);
 
                 OnScreenChanged?.Invoke(m_ScreenList.Count);
+
+                return true;
             }
+
+            return false;
+        }
+
+        private void RemoveTopScreenFromListInternal()
+        {
+            m_ScreenList.RemoveAt(m_ScreenList.Count - 1);
+        }
+
+        private void ActivateTopScreen()
+        {
+            if (IsAnyScreenActive())
+            {
+                var topScreen = GetTopScreen();
+
+                if (topScreen != null)
+                {
+                    topScreen.gameObject.SetActive(true);
+                }
+            }
+        }
+
+        private void DestroyScreenInternal(Component screen)
+        {
+            Destroy(screen.gameObject);
         }
         #endregion
     }
