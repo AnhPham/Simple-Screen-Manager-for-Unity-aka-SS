@@ -406,7 +406,7 @@ public class ScreenManager
         if (s_screenManager == null)
             return true;
 
-        return s_screenManager.IsNoMoreScreen();
+        return s_screenManager.isNoMoreScreen;
     }
 
     /// <summary>
