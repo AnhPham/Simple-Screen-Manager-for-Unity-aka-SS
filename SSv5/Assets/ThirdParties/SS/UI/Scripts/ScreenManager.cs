@@ -168,7 +168,7 @@ public class ScreenManager
     /// <returns>The component type T in the screen.</returns>
     public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
     {
-        s_screenManager.pendingToLoadScreens++;
+        s_screenManager.pendingScreens++;
         var c = s_screenManager.StartCoroutine(s_screenManager.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
         s_screenManager.screenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
     }
@@ -444,7 +444,7 @@ public class ScreenManager
         if (s_screenManager == null)
             return 0;
 
-        return s_screenManager.pendingToLoadScreens;
+        return s_screenManager.pendingScreens;
     }
     #endregion
 }

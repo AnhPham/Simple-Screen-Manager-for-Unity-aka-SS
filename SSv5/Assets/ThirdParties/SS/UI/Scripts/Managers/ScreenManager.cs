@@ -71,9 +71,9 @@ namespace SS.UI
         #region Private Fields
         private List<Component> m_ScreenList = new List<Component>();
         private List<ScreenCoroutine> m_ScreenCoroutines = new List<ScreenCoroutine>();
-        private int m_PendingToLoadScreens = 0;
-        private int m_LoadingScreens = 0;
-        private int m_AnimationPlayingScreens = 0;
+        private int m_PendingScreens = 0;   // Number of screens is pending to load
+        private int m_LoadingScreens = 0;   // Number of screens is being loaded
+        private int m_AnimatingScreens = 0; // Number of screens is being animated (show/hide)
         #endregion
 
         #region Public Properties
@@ -81,7 +81,7 @@ namespace SS.UI
         public ShieldManager shieldManager { get => m_ShieldManager; set => m_ShieldManager = value; }
         public LoadingManager loadingManager { get => m_LoadingManager; set => m_LoadingManager = value; }
         public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public int pendingToLoadScreens { get => m_PendingToLoadScreens; set => m_PendingToLoadScreens = value; }
+        public int pendingScreens { get => m_PendingScreens; set => m_PendingScreens = value; }
         public List<ScreenCoroutine> screenCoroutines => m_ScreenCoroutines;
         public Canvas canvas => m_GeneralManager.canvas;
         public RectTransform screenContainer => m_GeneralManager.screenContainer;
@@ -92,6 +92,9 @@ namespace SS.UI
         #region Private Properties
         private bool IsLoadingVisible() => loadingManager.loadingObject != null && loadingManager.loadingObject.activeInHierarchy;
         private bool IsAnyScreenActive() => m_ScreenList.Count > 0;
+        private bool IsAnyScreenLoading() => m_LoadingScreens > 0;
+        private bool IsAnyScreenAnimating() => m_AnimatingScreens > 0;
+        private bool IsAnyScreenPending() => m_PendingScreens > 0;
         private Component GetTopScreen() => m_ScreenList[m_ScreenList.Count - 1];
         private bool IsScreen(Transform t) => t.GetComponent<ScreenController>() != null;
         private bool IsShield(Transform t) => t.GetComponent<ShieldController>() != null;
@@ -189,8 +192,8 @@ namespace SS.UI
 
             // Reset count variables
             m_LoadingScreens = 0;
-            m_AnimationPlayingScreens = 0;
-            m_PendingToLoadScreens = 0;
+            m_AnimatingScreens = 0;
+            m_PendingScreens = 0;
         }
 
         public void TryDestroyTopScreen()
@@ -210,24 +213,152 @@ namespace SS.UI
             }
         }
 
+        private IEnumerator WaitForAddConditions(AddConditionDelegate addCondition, bool waitUntilNoScreen)
+        {
+            // Wait until the addCondition() return true. This is a custom condition.
+            while (addCondition != null && !addCondition()) yield return null;
+
+            // Wait until no more screen is being loaded or animated
+            while (IsAnyScreenLoading() || IsAnyScreenAnimating()) yield return null;
+
+            // If waitUntilNoScreen is true, wait until no more screen is active or loading
+            while (waitUntilNoScreen && (IsAnyScreenLoading() || IsAnyScreenActive())) yield return null;
+        }
+
+        private string GetLastLoadedSceneName()
+        {
+            return sceneManager.lastLoadedScene != null ? sceneManager.lastLoadedScene.name : string.Empty;
+        }
+
+        private bool TryFindExistingScreen<T>(out T existingScreen, out int index) where T : Component
+        {
+            for (int i = 0; i < m_ScreenList.Count; i++)
+            {
+                existingScreen = m_ScreenList[i].GetComponentInChildren<T>();
+                if (existingScreen != null)
+                {
+                    index = i;
+                    return true;
+                }
+            }
+            existingScreen = null;
+            index = -1;
+            return false;
+        }
+
+        private void HandleDestroyTopScreen(Component topScreen, bool hasShield)
+        {
+            if (hasShield)
+            {
+                CreateShield(true);
+            }
+            DestroyScreenInternal(topScreen);
+        }
+
+        private void HandleHideTopScreen(Component topScreen, bool hasShield, bool hideTopScreen)
+        {
+            if (hideTopScreen)
+            {
+                topScreen.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (hasShield)
+                {
+                    CreateShield(true);
+                }
+            }
+        }
+
+        private void HandleExistingScreen<T>(T screen, int index, OnScreenLoadDelegate<T> onScreenLoad, string screenName, string fromScreen, bool manually) where T : Component
+        {
+            // Find Screen's child index
+            var screenChildIndex = FindChildIndex(screenContainer, screen.transform);
+
+            // If found
+            if (screenChildIndex >= 0)
+            {
+                // If not the lowest one
+                if (screenChildIndex > 0)
+                {
+                    // Underlying object
+                    Transform underlying = screenContainer.GetChild(screenChildIndex - 1);
+
+                    // Overlying object
+                    Transform overlying = null;
+                    if (screenChildIndex + 1 < screenContainer.childCount)
+                    {
+                        overlying = screenContainer.GetChild(screenChildIndex + 1);
+                    }
+
+                    // If underlying object is a shield
+                    if (IsShield(underlying))
+                    {
+                        // If no overlying object or it also is a shield
+                        if (overlying == null || IsShield(overlying))
+                        {
+                            // Move the underlying shield to the highest position
+                            underlying.transform.SetAsLastSibling();
+                        }
+                        else
+                        {
+                            // If overlying object is a screen, deactivate it
+                            overlying.gameObject.SetActive(false);
+                        }
+                    }
+                }
+
+                // Move this screen to the highest position, play its show animation.
+                screen.transform.SetAsLastSibling();
+                screen.gameObject.SetActive(true);
+                PlayAnimation(screen, screen.GetComponent<ScreenController>().showAnimation, 4);
+
+                // Update the loading count
+                m_LoadingScreens--;
+
+                // Swap it with the top screen in the screen list
+                var temp = m_ScreenList[index];
+                m_ScreenList[index] = m_ScreenList[m_ScreenList.Count - 1];
+                m_ScreenList[m_ScreenList.Count - 1] = temp;
+
+                // Send OnScreenLoad event
+                onScreenLoad?.Invoke(screen);
+
+                // Update the pending count
+                if (m_PendingScreens > 0)
+                {
+                    m_PendingScreens--;
+                }
+
+                // Send OnScreenAdded event
+                OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+            }
+        }
+
+        private void HandleNewScreen<T>(string fromScreen, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true) where T : Component
+        {
+#if ADDRESSABLE
+            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
+            async.Completed += (a => {
+                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                {
+                    CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
+                    OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+                }
+            });
+#else
+            var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, screenName));
+            CreateScreen<T>(prefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
+            OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+#endif
+        }
+
         public IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
         {
             // Wait conditions
-            while (addCondition != null && !addCondition())
-            {
-                yield return 0;
-            }
+            yield return WaitForAddConditions(addCondition, waitUntilNoScreen);
 
-            while (m_LoadingScreens > 0 || m_AnimationPlayingScreens > 0)
-            {
-                yield return 0;
-            }
-
-            while (waitUntilNoScreen && (m_LoadingScreens > 0 || m_ScreenList.Count > 0))
-            {
-                yield return 0;
-            }
-
+            // Update loading screen count
             m_LoadingScreens++;
 
             // Create Shield if no any screen active
@@ -236,152 +367,46 @@ namespace SS.UI
                 CreateShield(true);
             }
 
-            // From what screen/scene
-            var fromScreen = sceneManager.lastLoadedScene != null ? sceneManager.lastLoadedScene.name : string.Empty;
+            // Set fromScreen is the last loaded scene name (then will set it again after check the top screen)
+            var fromScreen = GetLastLoadedSceneName();
 
-            // Check Exist Screen
-            var hasExistingScreen = false;
-            T existingScreen = null;
-            int existingScreenIndex = 0;
-
+            // Try find existing screen
+            var hasExistingScreen = false; T existingScreen = null; int existingScreenIndex = 0;
             if (useExistingScreen)
             {
-                for (int i = 0; i < m_ScreenList.Count; i++)
-                {
-                    existingScreen = m_ScreenList[i].GetComponentInChildren<T>();
-
-                    if (existingScreen != null)
-                    {
-                        hasExistingScreen = true;
-                        existingScreenIndex = i;
-
-                        break;
-                    }
-                }
+                hasExistingScreen = TryFindExistingScreen<T>(out existingScreen, out existingScreenIndex);
             }
 
-            // Process for destroyTopScreen, hideTopScreen, hasShield
+            // Handle for destroyTopScreen, hideTopScreen, hasShield
             if (IsAnyScreenActive())
             {
                 if (!useExistingScreen || !hasExistingScreen)
                 {
                     var topScreen = GetTopScreen();
-
                     if (topScreen != null)
                     {
                         if (destroyTopScreen)
                         {
-                            if (hasShield)
-                            {
-                                CreateShield(true);
-                            }
-                            DestroyScreenInternal(topScreen);
+                            HandleDestroyTopScreen(topScreen, hasShield);
                         }
                         else
                         {
-                            if (hideTopScreen)
-                            {
-                                topScreen.gameObject.SetActive(false);
-                            }
-                            else
-                            {
-                                if (hasShield)
-                                {
-                                    CreateShield(true);
-                                }
-                            }
+                            HandleHideTopScreen(topScreen, hasShield, hideTopScreen);
                         }
-
+                        // Set fromScreen is the top screen name
                         fromScreen = topScreen.name;
                     }
                 }
             }
 
-            // Process Existing Screen
-            T screen = null;
+            // Handle existing/new screen
             if (hasExistingScreen)
             {
-                screen = existingScreen;
-
-                // Find Screen's child index
-                var screenChildIndex = FindChildIndex(screenContainer, screen.transform);
-
-                // If found
-                if (screenChildIndex >= 0)
-                {
-                    // If not the lowest one
-                    if (screenChildIndex > 0)
-                    {
-                        // Underlying object
-                        Transform underlying = screenContainer.GetChild(screenChildIndex - 1);
-
-                        // Overlying object
-                        Transform overlying = null;
-                        if (screenChildIndex + 1 < screenContainer.childCount)
-                        {
-                            overlying = screenContainer.GetChild(screenChildIndex + 1);
-                        }
-
-                        // If underlying object is a shield
-                        if (IsShield(underlying))
-                        {
-                            // If no overlying object or it also is a shield
-                            if (overlying == null || IsShield(overlying))
-                            {
-                                // Move the underlying shield to the highest position
-                                underlying.transform.SetAsLastSibling();
-                            }
-                            else
-                            {
-                                // If overlying object is a screen, deactivate it
-                                overlying.gameObject.SetActive(false);
-                            }
-                        }
-                    }
-
-                    // Move this screen to the highest position, play its show animation.
-                    screen.transform.SetAsLastSibling();
-                    screen.gameObject.SetActive(true);
-                    PlayAnimation(screen, screen.GetComponent<ScreenController>().showAnimation, 4);
-
-                    // Update the loading count
-                    m_LoadingScreens--;
-
-                    // Swap it with the top screen in the screen list
-                    var temp = m_ScreenList[existingScreenIndex];
-                    m_ScreenList[existingScreenIndex] = m_ScreenList[m_ScreenList.Count - 1];
-                    m_ScreenList[m_ScreenList.Count - 1] = temp;
-
-                    // Send OnScreenLoad event
-                    onScreenLoad?.Invoke(screen);
-
-                    // Update the pending count
-                    if (m_PendingToLoadScreens > 0)
-                    {
-                        m_PendingToLoadScreens--;
-                    }
-
-                    // Send OnScreenAdded event
-                    OnScreenAdded?.Invoke(screenName, fromScreen, manually);
-                }
+                HandleExistingScreen(existingScreen, existingScreenIndex, onScreenLoad, screenName, fromScreen, manually);
             }
-
-            if (!hasExistingScreen)
+            else
             {
-#if ADDRESSABLE
-                var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
-                async.Completed += (a => {
-                    if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                    {
-                        CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
-                        OnScreenAdded?.Invoke(screenName, fromScreen, manually);
-                    }
-                });
-#else
-                var prefab = Resources.Load<GameObject>(Path.Combine(m_ScreenPath, screenName));
-                CreateScreen<T>(prefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
-                OnScreenAdded?.Invoke(screenName, fromScreen, manually);
-#endif
+                HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually);
             }
         }
 
@@ -418,7 +443,7 @@ namespace SS.UI
 
         public bool IsNoMoreScreen()
         {
-            return (m_ScreenList.Count <= 0 && m_LoadingScreens <= 0 && m_AnimationPlayingScreens <= 0);
+            return (m_ScreenList.Count <= 0 && m_LoadingScreens <= 0 && m_AnimatingScreens <= 0);
         }
         #endregion
 
@@ -445,9 +470,9 @@ namespace SS.UI
 
             onScreenLoad?.Invoke(screen);
 
-            if (m_PendingToLoadScreens > 0)
+            if (m_PendingScreens > 0)
             {
-                m_PendingToLoadScreens--;
+                m_PendingScreens--;
             }
         }
 
@@ -543,7 +568,7 @@ namespace SS.UI
 
         private void PlayAnimation(Component screen, string animationName, int delayFrames = 0, bool destroyScreenAtAnimationEnd = false, OnAnimationEndedDelegate onAnimationEnd = null)
         {
-            m_AnimationPlayingScreens++;
+            m_AnimatingScreens++;
 
             var anim = AddAnimations(screen, screen.GetComponent<ScreenController>().animationObjectName, animationName);
 
@@ -591,7 +616,7 @@ namespace SS.UI
 
             onAnimationEnd?.Invoke();
 
-            m_AnimationPlayingScreens--;
+            m_AnimatingScreens--;
         }
 
         private ScreenController AddScreenController(Component screen)
