@@ -51,7 +51,11 @@ From Menu: SS / Screen Generator / Input Screen Name / Generate
 <h3>4. Add a screen on top with default animation</h3>
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
+using SS.UI;
+```
+
+```cs
+Core.Add<Screen1Controller>(screenName: "Screen1");
 ```
 
 <p align="center">
@@ -61,7 +65,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
 <h3>5. Close a screen</h3>
 
 ```cs
-ScreenManager.Close();
+Core.Close();
 ```
 
 <p align="center">
@@ -71,7 +75,7 @@ ScreenManager.Close();
 <h3>6. Load a scene with automatic fade</h3>
 
 ```cs
-ScreenManager.Load<Scene1Controller>(sceneName: "Scene1");
+Core.Load<Scene1Controller>(sceneName: "Scene1");
 ```
 
 <p align="center">
@@ -140,17 +144,17 @@ public enum ScreenAnimation
 
 The screen slides from the left to the center when showing.
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", showAnimation: ScreenAnimation.LeftShow, hideAnimation: ScreenAnimation.LeftHide);
+Core.Add<Screen1Controller>(screenName: "Screen1", showAnimation: ScreenAnimation.LeftShow, hideAnimation: ScreenAnimation.LeftHide);
 ```
 
 The screen slides from the center to the left when hiding. The 'hideAnimation' which is declared in the Add function will be used
 ```cs
-ScreenManager.Close();
+Core.Close();
 ```
 
 The screen fades out when hiding.
 ```cs
-ScreenManager.Close(hideAnimation: ScreenAnimation.FadeHide);
+Core.Close(hideAnimation: ScreenAnimation.FadeHide);
 ```
 
 <h4>2.3. Custom Screen Animations: </h4>
@@ -162,7 +166,7 @@ Put your custom animations (Unity legacy animations) in Resources/Animations
 
 Add screen with custom animations
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", showAnimation: "Custom1Show", hideAnimation: "Custom1Hide");
+Core.Add<Screen1Controller>(screenName: "Screen1", showAnimation: "Custom1Show", hideAnimation: "Custom1Hide");
 ```
 
 <h4>2.4. Custom Animation Object: </h4>
@@ -170,7 +174,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1", showAnimation: "Cust
 In default, animations will be added to the root object of screen
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
+Core.Add<Screen1Controller>(screenName: "Screen1");
 ```
 
 <p align="center">
@@ -180,7 +184,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
 In case you only want to animate a few objects on the screen, the rest are static and not animated
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", animationObjectName: "Animation");
+Core.Add<Screen1Controller>(screenName: "Screen1", animationObjectName: "Animation");
 ```
 
 <p align="center">
@@ -192,7 +196,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1", animationObjectName:
 In default, Screen Animation Speed is 1. You can change it.
 
 ```cs
-ScreenManager.Set(screenAnimationSpeed: 1.5f);
+Core.Set(screenAnimationSpeed: 1.5f);
 ```
 
 <h4>2.6. Show Animation One Time </h4>
@@ -200,7 +204,7 @@ ScreenManager.Set(screenAnimationSpeed: 1.5f);
 Indicate whether a screen play its show animation again when the screen above it closes. By default, showAnimationOneTime is false.
 
 ```cs
-ScreenManager.Set(showAnimationOneTime: true);
+Core.Set(showAnimationOneTime: true);
 ```
 
 <h4>2.7. None Screen Animation </h4>
@@ -208,7 +212,7 @@ ScreenManager.Set(showAnimationOneTime: true);
 For None Screen Animation, you can use an empty string for showAnimation & hideAnimation like this:
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", showAnimation: "", hideAnimation: "");
+Core.Add<Screen1Controller>(screenName: "Screen1", showAnimation: "", hideAnimation: "");
 ```
 
 <h3>3. Events</h3>
@@ -218,7 +222,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1", showAnimation: "", h
 Note: onScreenLoaded is called after Awake & OnEnable, before Start of scripts in screen
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", onScreenLoad: (screen) => {
+Core.Add<Screen1Controller>(screenName: "Screen1", onScreenLoad: (screen) => {
     // screen.Init();
 });
 ```
@@ -229,7 +233,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1", onScreenLoad: (scree
 Note: onSceneLoaded is called after Awake & OnEnable, before Start of scripts in scene
 
 ```cs
-ScreenManager.Load<Scene1Controller>(sceneName: "Scene1", onSceneLoaded: (scene1) =>
+Core.Load<Scene1Controller>(sceneName: "Scene1", onSceneLoaded: (scene1) =>
 {
     // scene1.Init();
 });
@@ -240,7 +244,7 @@ ScreenManager.Load<Scene1Controller>(sceneName: "Scene1", onSceneLoaded: (scene1
 Note: onScreenClosed is called after the hideAnimation is ended (right after the screen is destroyed)
 
 ```cs
-ScreenManager.Close(() =>
+Core.Close(() =>
 {
     // Code after closing this screen
 });
@@ -255,7 +259,7 @@ public class Screen1Controller : MonoBehaviour, IKeyBack
 {
     public void OnKeyBack()
     {
-        ScreenManager.Close();
+        Core.Close();
     }
 }
 ```
@@ -266,20 +270,20 @@ Some projects require sending logs for analytics, indicating which screen is add
 
 ```cs
 // On Start of Main
-ScreenManager.AddListener(onScreenAdded: (toScreen, fromScreen, manually) => {
+Core.AddListener(onScreenAdded: (toScreen, fromScreen, manually) => {
     Debug.Log(string.Format("Add screen {0} from screen {1} ") + (manually ? "manually" : "automatically"));
 });
-ScreenManager.Load<Scene1Controller>(sceneName: "Scene1");
+Core.Load<Scene1Controller>(sceneName: "Scene1");
 ```
 
 ```cs
 // On Screen1 Button Tap
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", manually:true);
+Core.Add<Screen1Controller>(screenName: "Screen1", manually:true);
 ```
 
 ```cs
 // On Start of Screen1Controller
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2", manually:false);
+Core.Add<Screen2Controller>(screenName: "Screen2", manually:false);
 ```
 
 Output:
@@ -296,14 +300,14 @@ Some projects require displaying an ads banner only when no screens are being sh
 ```cs
 void OnEnable()
 {
-    ScreenManager.AddListener(OnScreenChanged);
+    Core.AddListener(OnScreenChanged);
 }
 ```
 
 ```cs
 void OnDisable()
 {
-    ScreenManager.RemoveListener(OnScreenChanged);
+    Core.RemoveListener(OnScreenChanged);
 }
 ```
 
@@ -328,9 +332,9 @@ void OnScreenChanged(int screenCount)
 In this example, Screen2 will be shown when user closes Screen1, then Screen3 will be shown when user closes Screen2. 
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2",  waitUntilNoScreen: true);
-ScreenManager.Add<Screen3Controller>(screenName: "Screen3",  waitUntilNoScreen: true);
+Core.Add<Screen1Controller>(screenName: "Screen1");
+Core.Add<Screen2Controller>(screenName: "Screen2",  waitUntilNoScreen: true);
+Core.Add<Screen3Controller>(screenName: "Screen3",  waitUntilNoScreen: true);
 ```
 
 <p align="center">
@@ -340,9 +344,9 @@ ScreenManager.Add<Screen3Controller>(screenName: "Screen3",  waitUntilNoScreen: 
 This example does not use waitUntilNoScreen, 3 Screens will appear consecutively.
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2");
-ScreenManager.Add<Screen3Controller>(screenName: "Screen3");
+Core.Add<Screen1Controller>(screenName: "Screen1");
+Core.Add<Screen2Controller>(screenName: "Screen2");
+Core.Add<Screen3Controller>(screenName: "Screen3");
 ```
 
 <p align="center">
@@ -358,7 +362,7 @@ bool something = false;
 ```
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", addCondition: WaitSomething);
+Core.Add<Screen1Controller>(screenName: "Screen1", addCondition: WaitSomething);
 ```
 
 ```cs
@@ -375,7 +379,7 @@ In some cases, you have to wait until there is no more Screen displayed before d
 ```cs
 IEnumerator WaitUntilNoScreenToDoSomething()
 {
-    while (!ScreenManager.IsNoMoreScreen())
+    while (!Core.IsNoMoreScreen())
     {
         yield return 0;
     }
@@ -391,13 +395,13 @@ The Screen shield is an image with customizable color and transparency, located 
 <h4>5.1. Set Screen Shield Color </h4>
 
 ```cs
-ScreenManager.Set(screenShieldColor: new Color(0, 0, 0, 0.8f));
+Core.Set(screenShieldColor: new Color(0, 0, 0, 0.8f));
 ```
 
 <h4>5.2. Display a Screen with/without a Shield </h4>
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName:"Screen1");
+Core.Add<Screen1Controller>(screenName:"Screen1");
 ```
 
 <p align="center">
@@ -405,7 +409,7 @@ ScreenManager.Add<Screen1Controller>(screenName:"Screen1");
 </p>
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName:"Screen1", hasShield: false);
+Core.Add<Screen1Controller>(screenName:"Screen1", hasShield: false);
 ```
 
 <p align="center">
@@ -415,11 +419,11 @@ ScreenManager.Add<Screen1Controller>(screenName:"Screen1", hasShield: false);
 <h4>5.3. Show/Hide the Screen shield manually (with fade animation) </h4>
 
 ```cs
-ScreenManager.ShowShield();
+Core.ShowShield();
 ```
 
 ```cs
-ScreenManager.HideShield();
+Core.HideShield();
 ```
 
 <p align="center">
@@ -431,7 +435,7 @@ ScreenManager.HideShield();
 Indicate whether close the top screen when users tap the shield. By default, closeOnTappingShield is false.
 
 ```cs
-ScreenManager.Set(closeOnTappingShield: true);
+Core.Set(closeOnTappingShield: true);
 ```
 
 <h3>6. Other parameters of adding a screen</h3>
@@ -441,11 +445,11 @@ ScreenManager.Set(closeOnTappingShield: true);
 If this parameter is true, check if the screen is existing, bring it to the top. If not found, instantiate a new one
 
 ```cs
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2", useExistingScreen: true);
+Core.Add<Screen2Controller>(screenName: "Screen2", useExistingScreen: true);
 ```
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1", useExistingScreen: true);
+Core.Add<Screen1Controller>(screenName: "Screen1", useExistingScreen: true);
 ```
 
 <p align="center">
@@ -456,11 +460,11 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1", useExistingScreen: t
 By default, this parameter is false, instantiate a new screen whenever Add is called
 
 ```cs
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2");
+Core.Add<Screen2Controller>(screenName: "Screen2");
 ```
 
 ```cs
-ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
+Core.Add<Screen1Controller>(screenName: "Screen1");
 ```
 
 <p align="center">
@@ -472,7 +476,7 @@ ScreenManager.Add<Screen1Controller>(screenName: "Screen1");
 If this parameter is true, destroy the top screen before adding a screen
 
 ```cs
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2", destroyTopScreen: true);
+Core.Add<Screen2Controller>(screenName: "Screen2", destroyTopScreen: true);
 ```
 
 <p align="center">
@@ -482,7 +486,7 @@ ScreenManager.Add<Screen2Controller>(screenName: "Screen2", destroyTopScreen: tr
 By default, this parameter is false, temporary hide the top screen when add the Screen2, and show it again after closing the Screen2
 
 ```cs
-ScreenManager.Add<Screen2Controller>(screenName: "Screen2");
+Core.Add<Screen2Controller>(screenName: "Screen2");
 ```
 
 <p align="center">
@@ -495,7 +499,7 @@ ScreenManager.Add<Screen2Controller>(screenName: "Screen2");
 
 Show a loading UI while loading a Scene.
 
-From Menu, SS / Screen Generator, create a Screen named SceneLoading. Use *ScreenManager.asyncOperation.progress* to get progress of scene loading, like below example
+From Menu, SS / Screen Generator, create a Screen named SceneLoading. Use *Core.asyncOperation.progress* to get progress of scene loading, like below example
 
 ```cs
 public class SceneLoadingController : MonoBehaviour
@@ -507,7 +511,7 @@ public class SceneLoadingController : MonoBehaviour
 
     private void Update()
     {
-        m_Progress.sizeDelta = new Vector2(ScreenManager.asyncOperation.progress * PROGRESS_WIDTH, PROGRESS_HEIGHT);
+        m_Progress.sizeDelta = new Vector2(Core.asyncOperation.progress * PROGRESS_WIDTH, PROGRESS_HEIGHT);
     }
 }
 ```
@@ -515,7 +519,7 @@ public class SceneLoadingController : MonoBehaviour
 Do not forget to set the Scene Loading name on App Launch 
 
 ```cs
-ScreenManager.Set(sceneLoadingName: "SceneLoading");
+Core.Set(sceneLoadingName: "SceneLoading");
 ```
 
 <p align="center">
@@ -531,20 +535,20 @@ From Menu, SS / Screen Generator, create a Screen named *Loading*. You should ad
 Do not forget to set the Loading name on App Launch 
 
 ```cs
-ScreenManager.Set(loadingName: "Loading");
+Core.Set(loadingName: "Loading");
 ```
 
 
 Show Loading
 
 ```cs
-ScreenManager.Loading(true);
+Core.Loading(true);
 ```
 
 Hide Loading
 
 ```cs
-ScreenManager.Loading(false);
+Core.Loading(false);
 ```
 
 <p align="center">
@@ -570,7 +574,7 @@ Edit the Tooltip prefab as you want, drag it to Resources/Screens folder (or dra
 Do not forget to set the Tooltip name on App Launch 
 
 ```cs
-ScreenManager.Set(tooltipName: "Tooltip");
+Core.Set(tooltipName: "Tooltip");
 ```
 
 Show the tooltip
@@ -581,16 +585,16 @@ public Transform button;
 
 ```cs
 // targetY is the distance from the start position along the Y axis
-ScreenManager.ShowTooltip(text: "Tooltip Text", worldPosition: button.position, targetY: 100f);
+Core.ShowTooltip(text: "Tooltip Text", worldPosition: button.position, targetY: 100f);
 ```
 
 Hide the tooltip
 
 ```cs
-ScreenManager.HideTooltip();
+Core.HideTooltip();
 ```
 
-<h3>9. Other useful methods of ScreenManager</h3>
+<h3>9. Other useful methods of Core</h3>
 
 <h4>9.1. Top </h4>
 
@@ -598,7 +602,7 @@ In some cases, you want to add somethings to the top of all Screens (like some f
 
 ```cs
 // Coin.cs
-transform.SetParent(ScreenManager.Top);
+transform.SetParent(Core.Top);
 ```
 
 <h4>9.2. Destroy </h4>
@@ -606,7 +610,7 @@ transform.SetParent(ScreenManager.Top);
 Destroy immediately the screen which is at the top of all screens, without playing animation.
 
 ```cs
-ScreenManager.Destroy();
+Core.Destroy();
 ```
 
 <h4>9.3. DestroyAll </h4>
@@ -614,7 +618,7 @@ ScreenManager.Destroy();
 Destroy immediately all screens, without playing animation.
 
 ```cs
-ScreenManager.DestroyAll();
+Core.DestroyAll();
 ```
 
 <h4>9.4. Destroy or Close a specific screen </h4>
@@ -624,11 +628,11 @@ var screen1 = FindObjectOfType<Screen1Controller>(true);
 ```
 
 ```cs
-ScreenManager.Destroy(screen: screen1);
+Core.Destroy(screen: screen1);
 ```
 
 ```cs
-ScreenManager.Close(screen: screen1);
+Core.Close(screen: screen1);
 ```
 
 <h2>Render pipeline compatibility</h2>
