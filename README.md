@@ -1,8 +1,8 @@
-<h1>Simple Screen Manager for Unity (aka SS)</h1>
+<h1>Simple & Scalable UI Manager for Unity (aka SS)</h1>
 
 <h2>Who is this for?</h2>
 
-* Developers looking for a **very simple Screen Manager / Navigator for Unity** with enough features to build any type of game, even mid-core or more complex projects.
+* Developers looking for a **very simple UI Manager / Navigator for Unity** with enough features to build any type of game, even mid-core or more complex projects.
 * Those who want to **learn the basics in 10 minutes**.
 * Those who want to **master advanced features in 30 minutes**.
 
