@@ -31,77 +31,15 @@ namespace SS.UI
         private GameObject m_SceneLoading;
         #endregion
 
-        #region Get/Set
-        public AsyncOperation asyncOperation
-        {
-            get;
-            protected set;
-        }
-
-        public Scene lastLoadedScene
-        {
-            get
-            {
-                return m_LastLoadedScene;
-            }
-        }
-
-        public ScreenManager screenManager
-        {
-            get
-            {
-                return m_ScreenManager;
-            }
-
-            set
-            {
-                m_ScreenManager = value;
-            }
-        }
-
-        public GeneralManager generalManager
-        {
-            get
-            {
-                return m_GeneralManager;
-            }
-
-            set
-            {
-                m_GeneralManager = value;
-            }
-        }
-
-        public Camera backgroundCamera
-        {
-            get
-            {
-                return m_GeneralManager.backgroundCamera;
-            }
-        }
-        public UnscaledAnimation sceneShield
-        {
-            get
-            {
-                return m_GeneralManager.sceneShield;
-            }
-        }
-
-        public RectTransform sceneLoadingContainer
-        {
-            get
-            {
-                return m_GeneralManager.sceneLoadingContainer;
-            }
-        }
-
-        public float animationSpeed
-        {
-            get
-            {
-                return m_GeneralManager.animationSpeed;
-            }
-        }
+        #region Public Properties
+        public AsyncOperation asyncOperation { get; protected set; }
+        public Scene lastLoadedScene => m_LastLoadedScene;
+        public ScreenManager screenManager { get => m_ScreenManager; set => m_ScreenManager = value; }
+        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
+        public Camera backgroundCamera => m_GeneralManager.backgroundCamera;
+        public UnscaledAnimation sceneShield => m_GeneralManager.sceneShield;
+        public RectTransform sceneLoadingContainer => m_GeneralManager.sceneLoadingContainer;
+        public float animationSpeed => m_GeneralManager.animationSpeed;
         #endregion
 
         #region Unity Cycle

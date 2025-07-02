@@ -28,27 +28,9 @@ namespace SS.UI
         private TooltipBaseController m_Tooltip;
         #endregion
 
-        #region Get/Set
-        public GeneralManager generalManager
-        {
-            get
-            {
-                return m_GeneralManager;
-            }
-
-            set
-            {
-                m_GeneralManager = value;
-            }
-        }
-
-        public RectTransform topContainer
-        {
-            get
-            {
-                return m_GeneralManager.topContainer;
-            }
-        }
+        #region Public Properties
+        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
+        public RectTransform topContainer => m_GeneralManager.topContainer;
         #endregion
 
         #region Unity Cycle

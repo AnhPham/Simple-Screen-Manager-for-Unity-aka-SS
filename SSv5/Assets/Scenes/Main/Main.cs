@@ -10,9 +10,9 @@ public class Main : MonoBehaviour
     {
         Application.targetFrameRate = 60;
 
-        ScreenManager.Set(sceneLoadingName: "SceneLoading", loadingName: "Loading", tooltipName: "Tooltip");
+        Core.Set(sceneLoadingName: "SceneLoading", loadingName: "Loading", tooltipName: "Tooltip");
 
-        ScreenManager.Load<Scene1>(sceneName: "Scene1", onSceneLoaded: (scene1) =>
+        Core.Load<Scene1>(sceneName: "Scene1", onSceneLoaded: (scene1) =>
         {
             scene1.data = "Scene1";
         });

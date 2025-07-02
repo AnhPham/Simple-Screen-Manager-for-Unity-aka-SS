@@ -12,6 +12,6 @@ public class SceneLoading : MonoBehaviour
 
     private void Update()
     {
-        m_Progress.sizeDelta = new Vector2(ScreenManager.asyncOperation.progress * PROGRESS_WIDTH, PROGRESS_HEIGHT);
+        m_Progress.sizeDelta = new Vector2(Core.asyncOperation.progress * PROGRESS_WIDTH, PROGRESS_HEIGHT);
     }
 }

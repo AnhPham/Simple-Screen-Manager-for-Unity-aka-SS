@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace SS.UI
 {
+    /// <summary>
+    /// Unity animation fixes position in its timeline, but we want it runs dynamically in some cases.
+    /// </summary>
     public class AnimationPosition : MonoBehaviour
     {
         [SerializeField] float m_BaseWidth = 720;

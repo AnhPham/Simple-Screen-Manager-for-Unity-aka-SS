@@ -460,12 +460,14 @@ namespace SS.UI
             }
         }
 
+        // Reveal underlying objects only if the overlying object is a shield, or a screen without shield, or no overlying object
         public void RevealUnderlyingScreenOrShield(Component screen)
         {
             var childCount = screenContainer.childCount;
 
             if (childCount > 0)
             {
+                // Find the screen in screen container
                 var childIndex = FindChildIndex(screenContainer, screen.transform);
 
                 if (childIndex < 0)
@@ -473,61 +475,70 @@ namespace SS.UI
                     return;
                 }
 
-                // Check overlying screen
-                var needProcessUnderlying = false;
+                var needHandleUnderlying = false;
 
+                // If this screen has overlying object
                 if (childIndex + 1 < childCount)
                 {
-                    var overlying = screenContainer.GetChild(childIndex + 1);
-                    var overlyingScreen = overlying.GetComponent<ScreenController>();
+                    var overlyingObject = screenContainer.GetChild(childIndex + 1);
+                    var overlyingScreen = overlyingObject.GetComponent<ScreenController>();
+
+                    // If overlying object is a shield, or it is a screen without shield
                     if (overlyingScreen == null || !overlyingScreen.hasShield)
                     {
-                        needProcessUnderlying = true;
+                        needHandleUnderlying = true;
                     }
                 }
-                else
+                else // If this screen has no overlying object
                 {
-                    needProcessUnderlying = true;
+                    needHandleUnderlying = true;
                 }
 
-                if (needProcessUnderlying)
+                if (needHandleUnderlying)
                 {
-                    ProcessUnderlyingRecursive(childCount, childIndex - 1);
+                    HandleUnderlyingRecursive(childCount, childIndex - 1);
                 }
             }
         }
 
-        private void ProcessUnderlyingRecursive(int childCount, int childIndex)
+        // If underlying object is a shield, hide it then continue check its underlying object recursively. If it is a screen, show it and stop recursive.
+        private void HandleUnderlyingRecursive(int childCount, int childIndex)
         {
+            // If childIndex is in valid range
             if (childIndex >= 0 && childIndex < childCount)
             {
-                var top = screenContainer.GetChild(childIndex);
+                // Get the object by childIndex
+                var obj = screenContainer.GetChild(childIndex);
 
-                var topScreen = top.GetComponent<ScreenController>();
+                // Get its screen controller
+                var screen = obj.GetComponent<ScreenController>();
 
-                if (topScreen != null && !topScreen.beingDestroyed)
+                // If it is a screen
+                if (screen != null && !screen.beingDestroyed)
                 {
                     if (!m_ShowAnimationOneTime)
                     {
-                        if (topScreen.gameObject != null && !topScreen.gameObject.activeInHierarchy)
+                        if (screen.gameObject != null && !screen.gameObject.activeInHierarchy)
                         {
-                            topScreen.gameObject.SetActive(true);
-
-                            var topController = topScreen.GetComponent<ScreenController>();
-
-                            PlayAnimation(topScreen, topController.showAnimation);
+                            // Show it
+                            screen.gameObject.SetActive(true);
+                            PlayAnimation(screen, screen.showAnimation);
                         }
                     }
                 }
                 else
                 {
-                    var shield = top.GetComponent<ShieldController>();
+                    // Get its shield controller
+                    var shield = obj.GetComponent<ShieldController>();
 
+                    // If it is a shield
                     if (shield != null && !shield.beingDestroyed)
                     {
+                        // Hide it
                         HideScreenShield(shield);
 
-                        ProcessUnderlyingRecursive(childCount, childIndex - 1);
+                        // Continue to handle its underlying object
+                        HandleUnderlyingRecursive(childCount, childIndex - 1);
                     }
                 }
             }
@@ -599,8 +610,10 @@ namespace SS.UI
         #region Animation
         private Animation AddAnimations(Component screen, string animationObjectName = "", params string[] animationNames)
         {
+            // By defause, animation object is screen object
             GameObject animObject = screen.gameObject;
 
+            // If animationObjectName is not null or empty, find it
             if (!string.IsNullOrEmpty(animationObjectName))
             {
                 animObject = FindChildBFS(screen.gameObject, animationObjectName);
@@ -611,35 +624,43 @@ namespace SS.UI
                 }
             }
 
+            // If Unity Animation is not added, add it.
             var anim = animObject.GetComponent<Animation>();
             if (anim == null)
             {
                 anim = animObject.AddComponent<Animation>();
             }
 
+            // If UnscaledAnimation is not added, add it. This one is for play Unity Animations without affection of time scale.
             var unscaledAnim = animObject.GetComponent<UnscaledAnimation>();
             if (unscaledAnim == null)
             {
                 animObject.AddComponent<UnscaledAnimation>();
             }
 
+            // Set not play automatically
             anim.playAutomatically = false;
 
+            // Loop all animation names
             for (int i = 0; i < animationNames.Length; i++)
             {
                 if (!string.IsNullOrEmpty(animationNames[i]))
                 {
+                    // If has no Animation Clip
                     if (anim.GetClip(animationNames[i]) == null)
                     {
+                        // Load the Animation Clip from screen animation path
                         var path = Path.Combine(m_ScreenAnimationPath, animationNames[i]);
                         var clip = Resources.Load<AnimationClip>(path);
 
+                        // If not found, load it from the default path
                         if (clip == null)
                         {
                             var defaultPath = Path.Combine("Animations", animationNames[i]);
                             clip = Resources.Load<AnimationClip>(defaultPath);
                         }
 
+                        // If found, add the Animation Clip to the Animation
                         if (clip != null)
                         {
                             anim.AddClip(clip, animationNames[i]);
@@ -650,11 +671,13 @@ namespace SS.UI
                         }
                     }
 
+                    // Add canvas group to control alpha of entire objects in the screen
                     if (animObject.GetComponent<CanvasGroup>() == null)
                     {
                         animObject.AddComponent<CanvasGroup>();
                     }
 
+                    // Add AnimationPosition component to play the screen animation dynamically. By default, Unity Animation fixes object positions throughout its timeline.
                     switch (animationNames[i])
                     {
                         case "RightShow":
@@ -690,10 +713,10 @@ namespace SS.UI
         {
             if (anim.GetClip(animationName) != null)
             {
-                // Show screen shield before playing animation
+                // Show the transparent top shield before playing any screen animation, to prevent any touch
                 shieldManager.transparentTopShield.SetActive(true);
 
-                // Unscaled anim
+                // Get Unscaled anim and pause the animation at frame 0.
                 var unscaledAnim = anim.GetComponent<UnscaledAnimation>();
                 unscaledAnim.PauseAtBeginning(animationName);
 
@@ -713,10 +736,10 @@ namespace SS.UI
                 // Play animation
                 unscaledAnim.Play(animationName, speed: animationSpeed);
 
-                // Wait animation
+                // Wait animation end
                 yield return new WaitForSecondsRealtime(anim[animationName].length / animationSpeed);
 
-                // Turn off screen shield after animation end
+                // Turn off transparent top shield after animation end
                 shieldManager.transparentTopShield.SetActive(false);
             }
 

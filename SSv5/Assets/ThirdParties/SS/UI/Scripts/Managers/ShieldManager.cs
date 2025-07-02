@@ -28,72 +28,14 @@ namespace SS.UI
         private GameObject m_TransparentTopShield;
         #endregion
 
-        #region Get/Set
-        public GameObject transparentTopShield
-        {
-            get
-            {
-                return m_TransparentTopShield;
-            }
-        }
-
-        public List<ShieldController> shieldList
-        {
-            get
-            {
-                return m_ShieldList;
-            }
-        }
-
-        public ScreenManager screenManager
-        {
-            get
-            {
-                return m_ScreenManager;
-            }
-
-            set
-            {
-                m_ScreenManager = value;
-            }
-        }
-
-        public GeneralManager generalManager
-        {
-            get
-            {
-                return m_GeneralManager;
-            }
-
-            set
-            {
-                m_GeneralManager = value;
-            }
-        }
-
-        public RectTransform screenContainer
-        {
-            get
-            {
-                return m_GeneralManager.screenContainer;
-            }
-        }
-
-        public RectTransform topShieldContainer
-        {
-            get
-            {
-                return m_GeneralManager.topShieldContainer;
-            }
-        }
-
-        public float animationSpeed
-        {
-            get
-            {
-                return m_GeneralManager.animationSpeed;
-            }
-        }
+        #region Public Properties
+        public GameObject transparentTopShield => m_TransparentTopShield;
+        public List<ShieldController> shieldList => m_ShieldList;
+        public ScreenManager screenManager { get => m_ScreenManager; set => m_ScreenManager = value; }
+        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
+        public RectTransform screenContainer => m_GeneralManager.screenContainer;
+        public RectTransform topShieldContainer => m_GeneralManager.topShieldContainer;
+        public float animationSpeed => m_GeneralManager.animationSpeed;
         #endregion
 
         #region Unity Cycle

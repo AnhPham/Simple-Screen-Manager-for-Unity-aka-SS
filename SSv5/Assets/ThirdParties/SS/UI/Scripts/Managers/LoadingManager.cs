@@ -30,35 +30,10 @@ namespace SS.UI
         private bool m_IsLoading;
         #endregion
 
-        #region Get/Set
-        public GeneralManager generalManager
-        {
-            get
-            {
-                return m_GeneralManager;
-            }
-
-            set
-            {
-                m_GeneralManager = value;
-            }
-        }
-
-        public RectTransform screenLoadingContainer
-        {
-            get
-            {
-                return m_GeneralManager.screenLoadingContainer;
-            }
-        }
-
-        public GameObject loadingObject
-        {
-            get
-            {
-                return m_LoadingObject;
-            }
-        }
+        #region Public Properties
+        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
+        public RectTransform screenLoadingContainer => m_GeneralManager.screenLoadingContainer;
+        public GameObject loadingObject => m_LoadingObject;
         #endregion
 
         #region Unity Cycle
