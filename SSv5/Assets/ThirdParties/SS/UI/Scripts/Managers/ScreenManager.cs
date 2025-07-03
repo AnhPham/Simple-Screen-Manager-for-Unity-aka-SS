@@ -253,8 +253,14 @@ namespace SS.UI
 
         public IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
         {
-            // Wait conditions
-            yield return WaitForAddConditions(addCondition, waitUntilNoScreen);
+            // Wait until the addCondition() return true. This is a custom condition.
+            while (addCondition != null && !addCondition()) yield return null;
+
+            // Wait until no more screen is being loaded or animated
+            while (IsAnyScreenLoading() || IsAnyScreenAnimating()) yield return null;
+
+            // If waitUntilNoScreen is true, wait until no more screen is active or loading
+            while (waitUntilNoScreen && (IsAnyScreenLoading() || IsAnyScreenActive())) yield return null;
 
             // Update loading screen count
             m_LoadingScreens++;
@@ -306,18 +312,6 @@ namespace SS.UI
             {
                 HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually);
             }
-        }
-
-        private IEnumerator WaitForAddConditions(AddConditionDelegate addCondition, bool waitUntilNoScreen)
-        {
-            // Wait until the addCondition() return true. This is a custom condition.
-            while (addCondition != null && !addCondition()) yield return null;
-
-            // Wait until no more screen is being loaded or animated
-            while (IsAnyScreenLoading() || IsAnyScreenAnimating()) yield return null;
-
-            // If waitUntilNoScreen is true, wait until no more screen is active or loading
-            while (waitUntilNoScreen && (IsAnyScreenLoading() || IsAnyScreenActive())) yield return null;
         }
 
         private string GetLastLoadedSceneName()
