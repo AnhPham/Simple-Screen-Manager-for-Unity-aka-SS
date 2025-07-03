@@ -447,6 +447,20 @@ namespace SS.UI
 
             return s_screenManager.pendingScreens;
         }
+
+        /// <summary>
+        /// The main canvas of this UI system
+        /// </summary>
+        public static Canvas Canvas
+        {
+            get
+            {
+                if (s_generalManager != null)
+                    return s_generalManager.canvas;
+
+                return null;
+            }
+        }
         #endregion
     }
 }
