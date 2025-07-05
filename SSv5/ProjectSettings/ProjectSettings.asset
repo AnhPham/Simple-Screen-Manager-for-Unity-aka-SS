@@ -162,6 +162,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
     Android: com.Zenga.SSv5
+    Standalone: com.Zenga.SSv5
     iPhone: com.Zenga.SSv5
   buildNumber:
     Standalone: 0
@@ -838,6 +839,8 @@ PlayerSettings:
   webGLPowerPreference: 2
   scriptingDefineSymbols:
     Android: ADDRESSABLE
+    Server: ADDRESSABLE
+    Standalone: ADDRESSABLE
     iPhone: ADDRESSABLE
   additionalCompilerArguments: {}
   platformArchitecture: {}
