@@ -6,6 +6,7 @@
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static SS.UI.SceneManager;
 
 namespace SS.UI
 {
@@ -22,17 +23,15 @@ namespace SS.UI
 
         #region Public Static
         /// <summary>
-        /// Get the scene loading operation. Can get some values like % progress.
+        /// Init this system using default managers or customized managers. Call this init once when your game starts, before any other calls from the Core class.
         /// </summary>
-        public static AsyncOperation asyncOperation
-        {
-            get
-            {
-                return s_sceneManager.asyncOperation;
-            }
-        }
-
-        public static void InitManagers(string generalManagerPath = "Prefabs/GeneralManager", string screenManagerPath = "Prefabs/ScreenManager", string sceneManagerPath = "Prefabs/SceneManager", string shieldManagerPath = "Prefabs/ShieldManager", string tooltipManagerPath = "Prefabs/TooltipManager", string loadingManagerPath = "Prefabs/LoadingManager")
+        /// <param name="generalManagerPath"></param>
+        /// <param name="screenManagerPath"></param>
+        /// <param name="sceneManagerPath"></param>
+        /// <param name="shieldManagerPath"></param>
+        /// <param name="tooltipManagerPath"></param>
+        /// <param name="loadingManagerPath"></param>
+        public static void Init(string generalManagerPath = "Prefabs/GeneralManager", string screenManagerPath = "Prefabs/ScreenManager", string sceneManagerPath = "Prefabs/SceneManager", string shieldManagerPath = "Prefabs/ShieldManager", string tooltipManagerPath = "Prefabs/TooltipManager", string loadingManagerPath = "Prefabs/LoadingManager")
         {
             if (s_initialized)
                 return;
@@ -105,13 +104,23 @@ namespace SS.UI
         /// <param name="closeOnTappingShield">Indicate whether close the top screen when users tap the shield</param>
         public static void Set(Color screenShieldColor, string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float animationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
         {
-            InitManagers();
-            s_generalManager.Setup(animationSpeed);
-            s_screenManager.Setup(screenPath, screenAnimationPath, showAnimationOneTime);
-            s_sceneManager.Setup(sceneLoadingName, screenPath);
-            s_shieldManager.Setup(screenShieldColor, closeOnTappingShield);
-            s_tooltipManager.Setup(tooltipName, screenPath);
-            s_loadingManager.Setup(loadingName, screenPath);
+            if (s_generalManager != null)
+                s_generalManager.Setup(animationSpeed);
+
+            if (s_screenManager != null)
+                s_screenManager.Setup(screenPath, screenAnimationPath, showAnimationOneTime);
+
+            if (s_sceneManager != null)
+                s_sceneManager.Setup(sceneLoadingName, screenPath);
+
+            if (s_shieldManager != null)
+                s_shieldManager.Setup(screenShieldColor, closeOnTappingShield);
+
+            if (s_tooltipManager != null)
+                s_tooltipManager.Setup(tooltipName, screenPath);
+
+            if (s_loadingManager != null)
+                s_loadingManager.Setup(loadingName, screenPath);
         }
 
         /// <summary>
@@ -127,13 +136,23 @@ namespace SS.UI
         /// <param name="closeOnTappingShield">Indicate whether close the top screen when users tap the shield</param>
         public static void Set(string screenPath = "Screens", string screenAnimationPath = "Animations", string sceneLoadingName = "", string loadingName = "", float animationSpeed = 1, string tooltipName = "", bool showAnimationOneTime = false, bool closeOnTappingShield = false)
         {
-            InitManagers();
-            s_generalManager.Setup(animationSpeed);
-            s_screenManager.Setup(screenPath, screenAnimationPath, showAnimationOneTime);
-            s_sceneManager.Setup(sceneLoadingName, screenPath);
-            s_shieldManager.Setup(closeOnTappingShield);
-            s_tooltipManager.Setup(tooltipName, screenPath);
-            s_loadingManager.Setup(loadingName, screenPath);
+            if (s_generalManager != null)
+                s_generalManager.Setup(animationSpeed);
+
+            if (s_screenManager != null)
+                s_screenManager.Setup(screenPath, screenAnimationPath, showAnimationOneTime);
+
+            if (s_sceneManager != null)
+                s_sceneManager.Setup(sceneLoadingName, screenPath);
+
+            if (s_shieldManager != null)
+                s_shieldManager.Setup(closeOnTappingShield);
+
+            if (s_tooltipManager != null)
+                s_tooltipManager.Setup(tooltipName, screenPath);
+
+            if (s_loadingManager != null)
+                s_loadingManager.Setup(loadingName, screenPath);
         }
 
         /// <summary>
@@ -147,7 +166,11 @@ namespace SS.UI
         public static void Load<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, SS.UI.SceneManager.OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreens = true) where T : Component
         {
             StopAllAddScreenCoroutines();
-            s_sceneManager.LoadScene(sceneName, mode, onSceneLoaded, clearAllScreens);
+
+            if (s_sceneManager != null)
+            {
+                s_sceneManager.LoadScene(sceneName, mode, onSceneLoaded, clearAllScreens);
+            }
         }
 
         /// <summary>
@@ -169,9 +192,12 @@ namespace SS.UI
         /// <returns>The component type T in the screen.</returns>
         public static void Add<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, SS.UI.ScreenManager.OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, SS.UI.ScreenManager.AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true) where T : Component
         {
-            s_screenManager.pendingScreens++;
-            var c = s_screenManager.StartCoroutine(s_screenManager.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
-            s_screenManager.screenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
+            if (s_screenManager != null)
+            {
+                s_screenManager.pendingScreens++;
+                var c = s_screenManager.StartCoroutine(s_screenManager.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
+                s_screenManager.screenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
+            }
         }
 
         /// <summary>
@@ -188,7 +214,10 @@ namespace SS.UI
         /// <param name="screen">The GameObject of screen</param>
         public static void AddToCanvas(GameObject screen)
         {
-            s_screenManager.AddToContainer(screen, s_screenManager.screenContainer);
+            if (s_screenManager != null)
+            {
+                s_screenManager.AddToContainer(screen, s_screenManager.screenContainer);
+            }
         }
 
         /// <summary>
@@ -196,7 +225,10 @@ namespace SS.UI
         /// </summary>
         public static void Destroy()
         {
-            s_screenManager.TryDestroyTopScreen();
+            if (s_screenManager != null)
+            {
+                s_screenManager.TryDestroyTopScreen();
+            }
         }
 
         /// <summary>
@@ -205,7 +237,10 @@ namespace SS.UI
         /// <param name="screen">The component in screen which is returned by the Add function.</param>
         public static void Destroy(Component screen)
         {
-            s_screenManager.TryDestroyScreen(screen);
+            if (s_screenManager != null)
+            {
+                s_screenManager.TryDestroyScreen(screen);
+            }
         }
 
         /// <summary>
@@ -213,7 +248,10 @@ namespace SS.UI
         /// </summary>
         public static void DestroyAll()
         {
-            s_screenManager.ClearAllScreens();
+            if (s_screenManager != null)
+            {
+                s_screenManager.ClearAllScreens();
+            }
         }
 
         /// <summary>
@@ -223,7 +261,10 @@ namespace SS.UI
         /// <param name="hideAnimation">The name of animation clip (which is put in 'screenAnimationPath') is used to animate the screen to hide it. If null, the 'hideAnimation' which is declared in the Add function will be used.</param>
         public static void Close(SS.UI.ScreenManager.OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
         {
-            s_screenManager.CloseScreen(onScreenClosed, hideAnimation);
+            if (s_screenManager != null)
+            {
+                s_screenManager.CloseScreen(onScreenClosed, hideAnimation);
+            }
         }
 
         /// <summary>
@@ -250,7 +291,10 @@ namespace SS.UI
         /// <param name="hideAnimation">The name of animation clip (which is put in 'screenAnimationPath') is used to animate the screen to hide it. If null, the 'hideAnimation' which is declared in the Add function will be used.</param>
         public static void Close(Component screen, SS.UI.ScreenManager.OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
         {
-            s_screenManager.CloseScreen(screen, onScreenClosed, hideAnimation);
+            if (s_screenManager != null)
+            {
+                s_screenManager.CloseScreen(screen, onScreenClosed, hideAnimation);
+            }
         }
 
         /// <summary>
@@ -276,17 +320,9 @@ namespace SS.UI
         /// <param name="timeout">If timeout == 0, no timeout</param>
         public static void Loading(bool isShow, float timeout = 0)
         {
-            s_loadingManager.ShowLoading(isShow, timeout);
-        }
-
-        /// <summary>
-        /// Hide Shield Or Show Top Screen
-        /// </summary>
-        public static void HideShieldOrShowTop(Component screen)
-        {
-            if (s_screenManager != null && s_screenManager.isActiveAndEnabled)
+            if (s_loadingManager != null)
             {
-                s_screenManager.RevealUnderlyingScreenOrShield(screen);
+                s_loadingManager.ShowLoading(isShow, timeout);
             }
         }
 
@@ -404,10 +440,12 @@ namespace SS.UI
         /// <returns></returns>
         public static bool IsNoMoreScreen()
         {
-            if (s_screenManager == null)
-                return true;
+            if (s_screenManager != null)
+            {
+                return s_screenManager.isNoMoreScreen;
+            }
 
-            return s_screenManager.isNoMoreScreen;
+            return true;
         }
 
         /// <summary>
@@ -419,10 +457,10 @@ namespace SS.UI
         /// <param name="targetY">Target Y</param>
         public static void ShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
         {
-            if (s_tooltipManager == null)
-                return;
-
-            s_tooltipManager.LoadAndShowTooltip(text, worldPosition, targetY);
+            if (s_tooltipManager != null)
+            {
+                s_tooltipManager.LoadAndShowTooltip(text, worldPosition, targetY);
+            }
         }
 
         /// <summary>
@@ -430,10 +468,10 @@ namespace SS.UI
         /// </summary>
         public static void HideTooltip()
         {
-            if (s_tooltipManager == null)
-                return;
-
-            s_tooltipManager.HideTooltipImmediately();
+            if (s_tooltipManager != null)
+            {
+                s_tooltipManager.HideTooltipImmediately();
+            }
         }
 
         /// <summary>
@@ -442,10 +480,12 @@ namespace SS.UI
         /// <returns></returns>
         public static int PendingScreensCount()
         {
-            if (s_screenManager == null)
-                return 0;
+            if (s_screenManager != null)
+            {
+                return s_screenManager.pendingScreens;
+            }
 
-            return s_screenManager.pendingScreens;
+            return 0;
         }
 
         /// <summary>
@@ -456,9 +496,27 @@ namespace SS.UI
             get
             {
                 if (s_generalManager != null)
+                {
                     return s_generalManager.canvas;
+                }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Get the scene loading operation progress.
+        /// </summary>
+        public static float asyncOperationProgress
+        {
+            get
+            {
+                if (s_sceneManager != null)
+                {
+                    return s_sceneManager.asyncOperationProgress;
+                }
+
+                return 0f;
             }
         }
         #endregion

@@ -55,6 +55,11 @@ using SS.UI;
 ```
 
 ```cs
+// Call this init once when your game starts, before any other calls from the Core class.
+Core.Init();
+```
+
+```cs
 Core.Add<Screen1Controller>(screenName: "Screen1");
 ```
 
@@ -493,25 +498,73 @@ Core.Add<Screen2Controller>(screenName: "Screen2");
   <img width="500px" src="/learn/unity/ss/advance/not-destroy-top-screen.gif?raw=true" alt="Demo">
 </p>
 
+<h4>6.3. Hide Top Screen</h4>
+
+If this parameter is false, the system will not hide the top screen when add other screen. By default it is true.
+
+```cs
+Core.Add<Screen2Controller>(screenName: "Screen2", hideTopScreen: false);
+```
+
 <h3>7. Loading</h3>
 
 <h4>7.1. Scene Loading </h4>
 
 Show a loading UI while loading a Scene.
 
-From Menu, SS / Screen Generator, create a Screen named SceneLoading. Use *Core.asyncOperation.progress* to get progress of scene loading, like below example
+From Menu, SS / Screen Generator, create a Screen named SceneLoading. Use *Core.asyncOperationProgress* to get progress of scene loading, like below example
 
 ```cs
 public class SceneLoadingController : MonoBehaviour
 {
-    const float PROGRESS_WIDTH = 500;
-    const float PROGRESS_HEIGHT = 50;
-
     [SerializeField] RectTransform m_Progress;
 
     private void Update()
     {
-        m_Progress.sizeDelta = new Vector2(Core.asyncOperation.progress * PROGRESS_WIDTH, PROGRESS_HEIGHT);
+        m_Progress.sizeDelta = new Vector2(Core.asyncOperationProgress * 500, 50);
+    }
+}
+```
+
+You also can implement *ISceneLoading* to add Show/Hide animations for the SceneLoadingController.
+
+```cs
+using SS.UI;
+
+public class SceneLoadingController : MonoBehaviour, ISceneLoading
+{
+    [SerializeField] RectTransform m_Progress;
+    [SerializeField] RectTransform m_ProgressBG;
+    [SerializeField] Animation m_Animation;
+
+    public void Show()
+    {
+        m_Animation.Play("SceneLoadingShow");
+    }
+
+    public void Hide()
+    {
+        m_Animation.Play("SceneLoadingHide");
+    }
+
+    public float ShowDuration()
+    {
+        return m_Animation["SceneLoadingShow"].length;
+    }
+
+    public float HideDuration()
+    {
+        return m_Animation["SceneLoadingHide"].length;
+    }
+
+    private void OnEnable()
+    {
+        m_Progress.sizeDelta = new Vector2(0, m_ProgressBG.sizeDelta.y);
+    }
+
+    private void Update()
+    {
+        m_Progress.sizeDelta = new Vector2(Core.asyncOperationProgress * m_ProgressBG.sizeDelta.x, m_ProgressBG.sizeDelta.y);
     }
 }
 ```
@@ -633,6 +686,14 @@ Core.Destroy(screen: screen1);
 
 ```cs
 Core.Close(screen: screen1);
+```
+
+<h4>9.5. Init </h4>
+
+Init this system using default managers or customized managers. Call this init once when your game starts, before any other calls from the Core class.
+
+```cs
+Core.Init(screenManagerPath: "Managers/MyScreenManager");
 ```
 
 <h2>Render pipeline compatibility</h2>
