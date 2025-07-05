@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3640800699983772984}
   - component: {fileID: 6965744024632387791}
   - component: {fileID: 1018718849768015433}
+  - component: {fileID: 732488845214696804}
   m_Layer: 5
   m_Name: Shield
   m_TagString: Untagged
@@ -34,7 +35,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -120,3 +120,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be966e2aa0f234f9781ef0d4144f04f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &732488845214696804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3334733689595132497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd45369ba0575487b835eef202973203, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _unscaledAnimation: {fileID: 1018718849768015433}

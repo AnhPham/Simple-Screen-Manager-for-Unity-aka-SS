@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using SS.UI;
 
 public class Screen3 : MonoBehaviour, IKeyBack
 {
@@ -10,6 +11,6 @@ public class Screen3 : MonoBehaviour, IKeyBack
 
     public void OnKeyBack()
     {
-        ScreenManager.Close(hideAnimation: ScreenAnimation.RightHide);
+        Core.Close(hideAnimation: ScreenAnimation.RightHide);
     }
 }

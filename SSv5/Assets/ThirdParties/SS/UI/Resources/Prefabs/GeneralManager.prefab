@@ -172,7 +172,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3812794315449902597}
   m_Layer: 5
-  m_Name: Screen Shield Top
+  m_Name: Screen Top Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -276,9 +276,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 11903998529241402}
-  - component: {fileID: 3864809253239665952}
+  - component: {fileID: 357935105200051100}
   m_Layer: 0
-  m_Name: ScreenManager
+  m_Name: GeneralManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -301,7 +301,7 @@ Transform:
   - {fileID: 5380072884156038532}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3864809253239665952
+--- !u!114 &357935105200051100
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -310,26 +310,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 8344229855142392524}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a354bc0957e2584984b2e8aa30870a8, type: 3}
+  m_Script: {fileID: 11500000, guid: 11a85ecb2fa2c426f97b76c44900933a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ScreenPath: Screens
-  m_ScreenAnimationPath: Animations
-  m_SceneLoadingName: 
-  m_LoadingName: 
-  m_TooltipName: 
-  m_ScreenShieldColor: {r: 0, g: 0, b: 0, a: 0.8}
-  m_ScreenAnimationSpeed: 1
-  m_ShowAnimationOneTime: 0
-  m_CloseOnTappingShield: 0
-  m_BackgroundCamera: {fileID: 963194227}
-  m_Canvas: {fileID: 4265156180626030905}
-  m_SceneShield: {fileID: 5710846472164670336}
-  m_ScreenContainer: {fileID: 2440548995555262917}
-  m_TopContainer: {fileID: 2998433135262869041}
-  m_ScreenLoadingContainer: {fileID: 6927814240675122046}
-  m_ScreenShieldTopContainer: {fileID: 3812794315449902597}
-  m_SceneLoadingContainer: {fileID: 7924265013673475819}
+  backgroundCamera: {fileID: 963194227}
+  canvas: {fileID: 4265156180626030905}
+  sceneShield: {fileID: 5710846472164670336}
+  screenContainer: {fileID: 2440548995555262917}
+  topContainer: {fileID: 2998433135262869041}
+  screenLoadingContainer: {fileID: 6927814240675122046}
+  topShieldContainer: {fileID: 3812794315449902597}
+  sceneLoadingContainer: {fileID: 7924265013673475819}
+  animationSpeed: 1
 --- !u!1001 &273574107451284992
 PrefabInstance:
   m_ObjectHideFlags: 0

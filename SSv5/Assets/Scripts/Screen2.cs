@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using SS.UI;
 
 public class Screen2 : MonoBehaviour, IKeyBack
 {
@@ -10,7 +11,7 @@ public class Screen2 : MonoBehaviour, IKeyBack
 
     public void OnLoadScene1ButtonTap()
     {
-        ScreenManager.Load<Scene1>(sceneName: "Scene1", mode: LoadSceneMode.Single, onSceneLoaded: (scene1) =>
+        Core.Load<Scene1>(sceneName: "Scene1", mode: LoadSceneMode.Single, onSceneLoaded: (scene1) =>
         {
             scene1.data = "Scene1...";
         });
@@ -18,7 +19,7 @@ public class Screen2 : MonoBehaviour, IKeyBack
 
     public void OnKeyBack()
     {
-        ScreenManager.Close();
+        Core.Close();
     }
 
     public void OnCloseScreen1ButtonTap()
@@ -27,13 +28,13 @@ public class Screen2 : MonoBehaviour, IKeyBack
 
         if (screen1 != null)
         {
-            ScreenManager.Destroy(screen: screen1);
+            Core.Destroy(screen: screen1);
         }
     }
 
     public void OnCloseAllScreensButtonTap()
     {
-        ScreenManager.DestroyAll();
+        Core.DestroyAll();
     }
 
     public void OnShowLoadingButtonTap()
@@ -43,22 +44,22 @@ public class Screen2 : MonoBehaviour, IKeyBack
 
     public void OnAddScreen1ButtonTap()
     {
-        ScreenManager.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.RightShow, hideAnimation: ScreenAnimation.RightHide, useExistingScreen: true, onScreenLoad: (screen) => {
+        Core.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.RightShow, hideAnimation: ScreenAnimation.RightHide, useExistingScreen: true, onScreenLoad: (screen) => {
             screen.label.text = "Screen1";
         });
     }
 
     public void OnShowTooltipButtonTap(Button button)
     {
-        ScreenManager.ShowTooltip(text: "This is a long tooltip to test overflowing the screen", worldPosition: button.transform.position, targetY:Random.Range(100f, 300f));
+        Core.ShowTooltip(text: "This is a long tooltip to test overflowing the screen", worldPosition: button.transform.position, targetY:Random.Range(100f, 300f));
     }
 
     private IEnumerator ShowLoadingASecond()
     {
-        ScreenManager.Loading(true);
+        Core.Loading(true);
 
         yield return new WaitForSecondsRealtime(1);
 
-        ScreenManager.Loading(false);
+        Core.Loading(false);
     }
 }
