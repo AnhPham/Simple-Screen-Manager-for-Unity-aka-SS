@@ -6,7 +6,6 @@
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static SS.UI.SceneManager;
 
 namespace SS.UI
 {
