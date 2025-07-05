@@ -217,6 +217,12 @@ namespace SS.UI
             if (IsAnyScreenActive())
             {
                 var topScreen = GetTopScreen();
+
+                // Normally, OnScreenDestroy is called from the OnDestroy method of Screen.
+                // However, in this case, we call it right before Destroy to ensure it is removed from the list immediately, without waiting for OnDestroy.
+                // This prevents potential issues where other AddScreen is called right afterward.
+                OnScreenDestroy(topScreen);
+
                 DestroyScreenInternal(topScreen);
             }
         }
@@ -291,7 +297,7 @@ namespace SS.UI
                     {
                         if (destroyTopScreen)
                         {
-                            HandleDestroyTopScreen(topScreen, hasShield);
+                            HandleDestroyTopScreen(topScreen);
                         }
                         else
                         {
@@ -335,12 +341,12 @@ namespace SS.UI
             return false;
         }
 
-        private void HandleDestroyTopScreen(Component topScreen, bool hasShield)
+        private void HandleDestroyTopScreen(Component topScreen)
         {
-            if (hasShield)
-            {
-                CreateShield(true);
-            }
+            // Remove from list before destroying will not triggered OnScreenDestroy
+            RemoveScreenFromListInternal(topScreen);
+
+            // Destroy it
             DestroyScreenInternal(topScreen);
         }
 
@@ -803,7 +809,7 @@ namespace SS.UI
         {
             if (screen != null && m_ScreenList.Contains(screen))
             {
-                m_ScreenList.Remove(screen);
+                RemoveScreenFromListInternal(screen);
 
                 OnScreenChanged?.Invoke(m_ScreenList.Count);
 
@@ -816,6 +822,11 @@ namespace SS.UI
         private void RemoveTopScreenFromListInternal()
         {
             m_ScreenList.RemoveAt(m_ScreenList.Count - 1);
+        }
+
+        private void RemoveScreenFromListInternal(Component screen)
+        {
+            m_ScreenList.Remove(screen);
         }
         #endregion
     }
