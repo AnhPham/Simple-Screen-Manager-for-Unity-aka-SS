@@ -512,19 +512,59 @@ Core.Add<Screen2Controller>(screenName: "Screen2", hideTopScreen: false);
 
 Show a loading UI while loading a Scene.
 
-From Menu, SS / Screen Generator, create a Screen named SceneLoading. Use *Core.asyncOperation.progress* to get progress of scene loading, like below example
+From Menu, SS / Screen Generator, create a Screen named SceneLoading. Use *Core.asyncOperationProgress* to get progress of scene loading, like below example
 
 ```cs
 public class SceneLoadingController : MonoBehaviour
 {
-    const float PROGRESS_WIDTH = 500;
-    const float PROGRESS_HEIGHT = 50;
-
     [SerializeField] RectTransform m_Progress;
 
     private void Update()
     {
-        m_Progress.sizeDelta = new Vector2(Core.asyncOperation.progress * PROGRESS_WIDTH, PROGRESS_HEIGHT);
+        m_Progress.sizeDelta = new Vector2(Core.asyncOperationProgress * 500, 50);
+    }
+}
+```
+
+You also can implement *ISceneLoading* to add Show/Hide animations for the SceneLoadingController.
+
+```cs
+using SS.UI;
+
+public class SceneLoadingController : MonoBehaviour, ISceneLoading
+{
+    [SerializeField] RectTransform m_Progress;
+    [SerializeField] RectTransform m_ProgressBG;
+    [SerializeField] Animation m_Animation;
+
+    public void Show()
+    {
+        m_Animation.Play("SceneLoadingShow");
+    }
+
+    public void Hide()
+    {
+        m_Animation.Play("SceneLoadingHide");
+    }
+
+    public float ShowDuration()
+    {
+        return m_Animation["SceneLoadingShow"].length;
+    }
+
+    public float HideDuration()
+    {
+        return m_Animation["SceneLoadingHide"].length;
+    }
+
+    private void OnEnable()
+    {
+        m_Progress.sizeDelta = new Vector2(0, m_ProgressBG.sizeDelta.y);
+    }
+
+    private void Update()
+    {
+        m_Progress.sizeDelta = new Vector2(Core.asyncOperationProgress * m_ProgressBG.sizeDelta.x, m_ProgressBG.sizeDelta.y);
     }
 }
 ```

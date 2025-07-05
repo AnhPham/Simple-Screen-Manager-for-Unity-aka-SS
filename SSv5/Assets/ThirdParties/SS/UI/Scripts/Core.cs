@@ -6,6 +6,7 @@
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static SS.UI.SceneManager;
 
 namespace SS.UI
 {
@@ -21,17 +22,6 @@ namespace SS.UI
         private static bool s_initialized = false;
 
         #region Public Static
-        /// <summary>
-        /// Get the scene loading operation. Can get some values like % progress.
-        /// </summary>
-        public static AsyncOperation asyncOperation
-        {
-            get
-            {
-                return s_sceneManager.asyncOperation;
-            }
-        }
-
         /// <summary>
         /// Init this system using default managers or customized managers. Call this init once when your game starts, before any other calls from the Core class.
         /// </summary>
@@ -511,6 +501,22 @@ namespace SS.UI
                 }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Get the scene loading operation progress.
+        /// </summary>
+        public static float asyncOperationProgress
+        {
+            get
+            {
+                if (s_sceneManager != null)
+                {
+                    return s_sceneManager.asyncOperationProgress;
+                }
+
+                return 0f;
             }
         }
         #endregion

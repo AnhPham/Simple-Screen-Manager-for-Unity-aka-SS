@@ -18,6 +18,7 @@ namespace SS.UI
         #region SerializeField
         [SerializeField] string m_SceneLoadingPath;
         [SerializeField] string m_SceneLoadingName;
+        [SerializeField] float m_LoadingMinDuration = 0.5f;
         [SerializeField] ScreenManager m_ScreenManager;
         [SerializeField] GeneralManager m_GeneralManager;
         #endregion
@@ -29,10 +30,13 @@ namespace SS.UI
         #region Private Member
         private Scene m_LastLoadedScene;
         private GameObject m_SceneLoading;
+        private ISceneLoading m_SceneLoadingInterface;
+        private AsyncOperation m_AsyncOperation;
+        private float m_Time;
         #endregion
 
         #region Public Properties
-        public AsyncOperation asyncOperation { get; protected set; }
+        public float asyncOperationProgress { get; protected set; }
         public Scene lastLoadedScene => m_LastLoadedScene;
         public ScreenManager screenManager { get => m_ScreenManager; set => m_ScreenManager = value; }
         public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
@@ -93,74 +97,114 @@ namespace SS.UI
         #region Private Functions
         private IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
         {
-            sceneShield.transform.SetAsLastSibling();
+            var isDefaultLoading = string.IsNullOrEmpty(m_SceneLoadingName);
 
             if (mode == LoadSceneMode.Single)
             {
-                sceneShield.Play("ShieldShow", speed: animationSpeed);
+                m_AsyncOperation = null;
+                m_Time = 0;
+                asyncOperationProgress = 0;
 
-                yield return new WaitForSecondsRealtime(sceneShield.GetLength("ShieldShow") / animationSpeed);
+                if (isDefaultLoading)
+                {
+                    sceneShield.transform.SetAsLastSibling();
+                    sceneShield.Play("ShieldShow", speed: animationSpeed);
+
+                    yield return new WaitForSecondsRealtime(sceneShield.GetLength("ShieldShow") / animationSpeed);
+                }
+                else
+                {
+                    if (m_SceneLoading == null)
+                    {
+#if ADDRESSABLE
+                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_SceneLoadingName);
+                        async.Completed += (a => {
+                            if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                            {
+                                CreateSceneLoading(async.Result);
+                                ShowSceneLoading();
+                            }
+                        });
+
+                        while (m_SceneLoading == null)
+                        {
+                            yield return 0;
+                        }
+#else
+                        var prefab = Resources.Load<GameObject>(Path.Combine(m_SceneLoadingPath, m_SceneLoadingName));
+                        CreateSceneLoading(prefab);
+                        ShowSceneLoading();
+#endif
+                    }
+                    else
+                    {
+                        ShowSceneLoading();
+                    }
+
+                    if (m_SceneLoadingInterface != null)
+                    {
+                        m_SceneLoadingInterface.Show();
+                        yield return new WaitForSecondsRealtime(m_SceneLoadingInterface.ShowDuration());
+                    }
+                }
 
                 if (clearAllScreen)
                 {
                     screenManager.ClearAllScreens();
                 }
-            }
 
-            if (mode == LoadSceneMode.Single && !string.IsNullOrEmpty(m_SceneLoadingName))
-            {
-                if (m_SceneLoading == null)
+                m_AsyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
+                m_AsyncOperation.allowSceneActivation = isDefaultLoading ? true : false;
+                m_AsyncOperation.completed += (asyncOp) =>
                 {
-#if ADDRESSABLE
-                    var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_SceneLoadingName);
-                    async.Completed += (a => {
-                        if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                    onSceneLoaded?.Invoke(GetSceneComponent<T>(m_LastLoadedScene));
+                };
+
+                while (!m_AsyncOperation.isDone)
+                {
+                    if (!isDefaultLoading)
+                    {
+                        if (m_AsyncOperation.progress < 0.9f || m_Time < m_LoadingMinDuration)
                         {
-                            CreateSceneLoading(async.Result);
-                            ShowSceneLoading();
+                            m_Time += Time.deltaTime;
+                            asyncOperationProgress = m_Time / m_LoadingMinDuration < m_AsyncOperation.progress ? m_Time / m_LoadingMinDuration : m_AsyncOperation.progress;
                         }
-                    });
-#else
-                    var prefab = Resources.Load<GameObject>(Path.Combine(m_SceneLoadingPath, m_SceneLoadingName));
-                    CreateSceneLoading(prefab);
-                    ShowSceneLoading();
-#endif
+                        else
+                        {
+                            m_AsyncOperation.allowSceneActivation = true;
+                            asyncOperationProgress = 1f;
+                        }
+                    }
+                    else
+                    {
+                        asyncOperationProgress = m_AsyncOperation.progress;
+                    }
+                    yield return null;
+                }
+
+                asyncOperationProgress = 1f;
+
+                if (isDefaultLoading)
+                {
+                    sceneShield.Play("ShieldHide", speed: animationSpeed);
                 }
                 else
                 {
-                    ShowSceneLoading();
+                    if (m_SceneLoadingInterface != null)
+                    {
+                        m_SceneLoadingInterface.Hide();
+                        yield return new WaitForSecondsRealtime(m_SceneLoadingInterface.HideDuration());
+                    }
+                    m_SceneLoading.SetActive(false);
                 }
             }
-
-            asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
-            asyncOperation.completed += (asyncOp) =>
+            else
             {
-                onSceneLoaded?.Invoke(GetSceneComponent<T>(m_LastLoadedScene));
-            };
-
-            while (!asyncOperation.isDone)
-            {
-                yield return null;
-            }
-
-            if (mode == LoadSceneMode.Single)
-            {
-                sceneShield.Play("ShieldHide", speed: animationSpeed);
-            }
-
-            if (mode == LoadSceneMode.Single && !string.IsNullOrEmpty(m_SceneLoadingName))
-            {
-                while (m_SceneLoading == null)
+                var asyncOperation2 = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
+                asyncOperation2.completed += (asyncOp) =>
                 {
-                    yield return 0;
-                }
-            }
-
-            if (m_SceneLoading != null)
-            {
-                yield return 0;
-
-                m_SceneLoading.SetActive(false);
+                    onSceneLoaded?.Invoke(GetSceneComponent<T>(m_LastLoadedScene));
+                };
             }
         }
 
@@ -169,6 +213,7 @@ namespace SS.UI
             m_SceneLoading = Instantiate(prefab);
             m_SceneLoading.name = m_SceneLoadingName;
             AddToContainer(m_SceneLoading, sceneLoadingContainer);
+            m_SceneLoading.TryGetComponent(out m_SceneLoadingInterface);
         }
 
         private void ShowSceneLoading()
