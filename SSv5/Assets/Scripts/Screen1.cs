@@ -51,6 +51,15 @@ public class Screen1 : MonoBehaviour, IKeyBack
         }, destroyTopScreen: true);
     }
 
+    public void OnDestroyMeThenAddScreen3ButtonTap()
+    {
+        Core.Destroy();
+
+        Core.Add<Screen3>(screenName: "Screen3", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
+            screen.label.text = "Screen3";
+        });
+    }
+
     private bool WaitSpaceKey()
     {
         return pressedSpaceKey;
