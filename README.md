@@ -55,6 +55,11 @@ using SS.UI;
 ```
 
 ```cs
+// Call this init once when your game starts, before any other calls from the Core class.
+Core.Init();
+```
+
+```cs
 Core.Add<Screen1Controller>(screenName: "Screen1");
 ```
 
@@ -493,6 +498,14 @@ Core.Add<Screen2Controller>(screenName: "Screen2");
   <img width="500px" src="/learn/unity/ss/advance/not-destroy-top-screen.gif?raw=true" alt="Demo">
 </p>
 
+<h4>6.3. Hide Top Screen</h4>
+
+If this parameter is false, the system will not hide the top screen when add other screen. By default it is true.
+
+```cs
+Core.Add<Screen2Controller>(screenName: "Screen2", hideTopScreen: false);
+```
+
 <h3>7. Loading</h3>
 
 <h4>7.1. Scene Loading </h4>
@@ -633,6 +646,14 @@ Core.Destroy(screen: screen1);
 
 ```cs
 Core.Close(screen: screen1);
+```
+
+<h4>9.5. Init </h4>
+
+Init this system using default managers or customized managers. Call this init once when your game starts, before any other calls from the Core class.
+
+```cs
+Core.Init(screenManagerPath: "Managers/MyScreenManager");
 ```
 
 <h2>Render pipeline compatibility</h2>
