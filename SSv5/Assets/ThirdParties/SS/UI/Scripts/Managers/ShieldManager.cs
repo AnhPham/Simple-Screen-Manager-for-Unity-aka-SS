@@ -94,7 +94,7 @@ namespace SS.UI
         {
             if (shield.gameObject.activeInHierarchy)
             {
-                shield.unscaledAnimation.Play("ShieldHide", (anim) => {
+                shield.UnscaledAnimation.Play("ShieldHide", (anim) => {
                     _shieldList.Remove(shield);
                     Destroy(shield.gameObject);
                 }, speed: AnimationSpeed);
@@ -114,7 +114,7 @@ namespace SS.UI
                         shield.gameObject.SetActive(true);
                     }
 
-                    shield.unscaledAnimation.Play("ShieldShow", speed: AnimationSpeed);
+                    shield.UnscaledAnimation.Play("ShieldShow", speed: AnimationSpeed);
                 }
             }
         }
@@ -127,7 +127,7 @@ namespace SS.UI
 
                 if (shield != null)
                 {
-                    shield.unscaledAnimation.Play("ShieldHide", speed: AnimationSpeed);
+                    shield.UnscaledAnimation.Play("ShieldHide", speed: AnimationSpeed);
                 }
             }
         }
@@ -147,10 +147,10 @@ namespace SS.UI
 
         protected virtual void ShowScreenShield(ShieldController shield)
         {
-            if (!shield.gameObject.activeInHierarchy || (shield.unscaledAnimation.isPlaying && shield.unscaledAnimation.currentClipName == "ShieldHide"))
+            if (!shield.gameObject.activeInHierarchy || (shield.UnscaledAnimation.IsPlaying && shield.UnscaledAnimation.CurrentClipName == "ShieldHide"))
             {
                 shield.gameObject.SetActive(true);
-                shield.unscaledAnimation.Play("ShieldShow", speed: AnimationSpeed);
+                shield.UnscaledAnimation.Play("ShieldShow", speed: AnimationSpeed);
             }
         }
 

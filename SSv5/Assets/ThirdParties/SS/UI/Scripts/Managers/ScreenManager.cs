@@ -187,7 +187,7 @@ namespace SS.UI
         {
             if (IsAnyScreenActive())
             {
-                hideAnimation = (hideAnimation != null) ? hideAnimation : screen.GetComponent<ScreenController>().hideAnimation;
+                hideAnimation = (hideAnimation != null) ? hideAnimation : screen.GetComponent<ScreenController>().HideAnimation;
                 PlayAnimation(screen, hideAnimation, 0, true, () => { onScreenClosed?.Invoke(); });
             }
         }
@@ -403,7 +403,7 @@ namespace SS.UI
                 // Move this screen to the highest position, play its show animation.
                 screen.transform.SetAsLastSibling();
                 screen.gameObject.SetActive(true);
-                PlayAnimation(screen, screen.GetComponent<ScreenController>().showAnimation, 4);
+                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);
 
                 // Update the loading count
                 _loadingScreens--;
@@ -481,7 +481,7 @@ namespace SS.UI
                     var overlyingScreen = overlyingObject.GetComponent<ScreenController>();
 
                     // If overlying object is a shield, or it is a screen without shield
-                    if (overlyingScreen == null || !overlyingScreen.hasShield)
+                    if (overlyingScreen == null || !overlyingScreen.HasShield)
                     {
                         needHandleUnderlying = true;
                     }
@@ -511,7 +511,7 @@ namespace SS.UI
                 var screen = obj.GetComponent<ScreenController>();
 
                 // If it is a screen
-                if (screen != null && !screen.beingDestroyed)
+                if (screen != null && !screen.BeingDestroyed)
                 {
                     if (!_showAnimationOneTime)
                     {
@@ -519,7 +519,7 @@ namespace SS.UI
                         {
                             // Show it
                             screen.gameObject.SetActive(true);
-                            PlayAnimation(screen, screen.showAnimation);
+                            PlayAnimation(screen, screen.ShowAnimation);
                         }
                     }
                 }
@@ -529,7 +529,7 @@ namespace SS.UI
                     var shield = obj.GetComponent<ShieldController>();
 
                     // If it is a shield
-                    if (shield != null && !shield.beingDestroyed)
+                    if (shield != null && !shield.BeingDestroyed)
                     {
                         // Hide it
                         HideScreenShield(shield);
@@ -551,12 +551,12 @@ namespace SS.UI
             AddToContainer(screen.gameObject, ScreenContainer);
 
             var controller = AddScreenController(screen);
-            controller.screen = screen;
-            controller.showAnimation = showAnimation;
-            controller.hideAnimation = hideAnimation;
-            controller.animationObjectName = animationObjectName;
-            controller.hasShield = hasShield;
-            controller.screenManager = this;
+            controller.Screen = screen;
+            controller.ShowAnimation = showAnimation;
+            controller.HideAnimation = hideAnimation;
+            controller.AnimationObjectName = animationObjectName;
+            controller.HasShield = hasShield;
+            controller.Manager = this;
 
             AddAnimations(screen, animationObjectName, showAnimation, hideAnimation);
             PlayAnimation(screen, showAnimation, 4);
@@ -701,7 +701,7 @@ namespace SS.UI
         {
             _animatingScreens++;
 
-            var anim = AddAnimations(screen, screen.GetComponent<ScreenController>().animationObjectName, animationName);
+            var anim = AddAnimations(screen, screen.GetComponent<ScreenController>().AnimationObjectName, animationName);
 
             StartCoroutine(CoPlayAnimation(anim, animationName, delayFrames, onAnimationEnd, destroyScreenAtAnimationEnd ? screen : null));
         }

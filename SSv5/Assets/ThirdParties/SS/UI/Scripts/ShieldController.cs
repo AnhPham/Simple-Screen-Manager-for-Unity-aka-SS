@@ -15,14 +15,14 @@ namespace SS.UI
         #endregion
 
         #region Public Properties
-        public UnscaledAnimation unscaledAnimation => _unscaledAnimation;
-        public bool beingDestroyed { get; protected set; }
+        public UnscaledAnimation UnscaledAnimation => _unscaledAnimation;
+        public bool BeingDestroyed { get; protected set; }
         #endregion
 
         #region Unity Cycle
         private void OnDestroy()
         {
-            beingDestroyed = true;
+            BeingDestroyed = true;
         }
         #endregion
     }

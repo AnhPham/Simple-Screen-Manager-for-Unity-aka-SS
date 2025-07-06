@@ -11,33 +11,33 @@ namespace SS.UI
 {
     public class TooltipBaseController : MonoBehaviour
     {
-        public float padding = 10f;
+        [SerializeField] protected float _padding = 10f;
 
-        RectTransform tooltipRect;
-        UnscaledAnimation m_Animation;
-        Vector2 m_StartPosition;
-        float m_TargetY;
+        protected RectTransform _tooltipRect;
+        protected UnscaledAnimation _animation;
+        protected Vector2 _startPosition;
+        protected float _targetY;
 
         protected virtual void Awake()
         {
-            tooltipRect = GetComponent<RectTransform>();
-            m_Animation = GetComponent<UnscaledAnimation>();
+            _tooltipRect = GetComponent<RectTransform>();
+            _animation = GetComponent<UnscaledAnimation>();
         }
 
-        private void LateUpdate()
+        protected virtual void LateUpdate()
         {
-            if (m_Animation != null && m_Animation.isPlaying)
+            if (_animation != null && _animation.IsPlaying)
             {
                 Reposition();
             }
         }
 
-        private void Reposition()
+        protected virtual void Reposition()
         {
-            tooltipRect.anchoredPosition = new Vector2(tooltipRect.anchoredPosition.x + m_StartPosition.x, tooltipRect.anchoredPosition.y * m_TargetY + m_StartPosition.y); ;
+            _tooltipRect.anchoredPosition = new Vector2(_tooltipRect.anchoredPosition.x + _startPosition.x, _tooltipRect.anchoredPosition.y * _targetY + _startPosition.y); ;
         }
 
-        public void ShowTooltip(string text, Vector2 anchoredPosition, float targetY = 100f)
+        public virtual void ShowTooltip(string text, Vector2 anchoredPosition, float targetY = 100f)
         {
             // Canvas
             var canvas = GetComponentInParent<Canvas>();
@@ -48,37 +48,37 @@ namespace SS.UI
             var canvasRect = canvas.GetComponent<RectTransform>();
 
             // Target Y
-            m_TargetY = targetY;
+            _targetY = targetY;
 
             // Text
             SetText(text);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipRect);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_tooltipRect);
 
             // Size
-            float halfWidth = tooltipRect.rect.width * 0.5f;
+            float halfWidth = _tooltipRect.rect.width * 0.5f;
             float canvasHalfWidth = canvasRect.rect.width * 0.5f;
 
             // Update position to avoid overflow screen
-            if (anchoredPosition.x - halfWidth < -canvasHalfWidth + padding)
+            if (anchoredPosition.x - halfWidth < -canvasHalfWidth + _padding)
             {
-                anchoredPosition.x = -canvasHalfWidth + halfWidth + padding;
+                anchoredPosition.x = -canvasHalfWidth + halfWidth + _padding;
             }
-            else if (anchoredPosition.x + halfWidth > canvasHalfWidth - padding)
+            else if (anchoredPosition.x + halfWidth > canvasHalfWidth - _padding)
             {
-                anchoredPosition.x = canvasHalfWidth - halfWidth - padding;
+                anchoredPosition.x = canvasHalfWidth - halfWidth - _padding;
             }
-            tooltipRect.anchoredPosition = anchoredPosition;
+            _tooltipRect.anchoredPosition = anchoredPosition;
 
             // Start position
-            m_StartPosition = anchoredPosition;
+            _startPosition = anchoredPosition;
 
             // Activate
             gameObject.SetActive(true);
 
-            m_Animation.Play("Tooltip", OnAnimationEnd);
+            _animation.Play("Tooltip", OnAnimationEnd);
         }
 
-        public void ShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
+        public virtual void ShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
         {
             // Canvas
             var canvas = GetComponentInParent<Canvas>();
@@ -96,7 +96,7 @@ namespace SS.UI
         {
         }
 
-        public void HideToolTip()
+        public virtual void HideToolTip()
         {
             if (gameObject != null)
             {
@@ -104,7 +104,7 @@ namespace SS.UI
             }
         }
 
-        public void OnAnimationEnd(string clipName)
+        public virtual void OnAnimationEnd(string clipName)
         {
             HideToolTip();
         }

@@ -11,23 +11,23 @@ namespace SS.UI
     public class ScreenController : MonoBehaviour
     {
         #region Public Properties
-        public Component screen { get; set; }
-        public string showAnimation { get; set; }
-        public string hideAnimation { get; set; }
-        public string animationObjectName { get; set; }
-        public bool hasShield { get; set; }
-        public ScreenManager screenManager { get; set; }
-        public bool beingDestroyed { get; protected set; }
+        public Component Screen { get; set; }
+        public string ShowAnimation { get; set; }
+        public string HideAnimation { get; set; }
+        public string AnimationObjectName { get; set; }
+        public bool HasShield { get; set; }
+        public ScreenManager Manager { get; set; }
+        public bool BeingDestroyed { get; protected set; }
         #endregion
 
         #region Unity Cycle
         private void OnDestroy()
         {
-            beingDestroyed = true;
+            BeingDestroyed = true;
 
-            if (screenManager != null)
+            if (Manager != null)
             {
-                screenManager.OnScreenDestroy(screen);
+                Manager.OnScreenDestroy(Screen);
             }
         }
         #endregion
