@@ -123,10 +123,15 @@ namespace SS.UI
                     // For custom loading UI
                     TryCreateAndShowSceneLoading();
 
-                    // If there is a component in the custom loading UI which implements ISceneLoading, play its show-animation
+                    // Wait until _sceneLoading is not null
+                    while (_sceneLoading == null)
+                    {
+                        yield return 0;
+                    }
+
+                    // If there is a component in the custom loading UI which implements ISceneLoading, wait until its show-animation end
                     if (_sceneLoadingInterface != null)
                     {
-                        _sceneLoadingInterface.Show();
                         yield return new WaitForSecondsRealtime(_sceneLoadingInterface.ShowDuration());
                     }
                 }
@@ -206,11 +211,6 @@ namespace SS.UI
                         ShowSceneLoading();
                     }
                 });
-
-                while (_sceneLoading == null)
-                {
-                    yield return 0;
-                }
 #else
                 var prefab = Resources.Load<GameObject>(Path.Combine(_sceneLoadingPath, _sceneLoadingName));
                 CreateSceneLoading(prefab);
@@ -248,6 +248,12 @@ namespace SS.UI
         protected virtual void ShowSceneLoading()
         {
             _sceneLoading.SetActive(true);
+
+            // If there is a component in the custom loading UI which implements ISceneLoading, play its show-animation
+            if (_sceneLoadingInterface != null)
+            {
+                _sceneLoadingInterface.Show();
+            }
         }
 
         protected virtual void SetupCameras()

@@ -286,6 +286,7 @@ MonoBehaviour:
   _progress: {fileID: 3418422984046714063}
   _progressBG: {fileID: 408106300}
   _animation: {fileID: 6418102818416194450}
+  _canvasGroup: {fileID: 8208232124054420044}
 --- !u!111 &6418102818416194450
 Animation:
   m_ObjectHideFlags: 0
@@ -300,7 +301,7 @@ Animation:
   - {fileID: 7400000, guid: c6e6d286c92d4be48ba53e58c83d1e79, type: 2}
   - {fileID: 7400000, guid: c60272b28a8c9f74e8828c930997b335, type: 2}
   m_WrapMode: 0
-  m_PlayAutomatically: 1
+  m_PlayAutomatically: 0
   m_AnimatePhysics: 0
   m_CullingType: 0
 --- !u!225 &8208232124054420044

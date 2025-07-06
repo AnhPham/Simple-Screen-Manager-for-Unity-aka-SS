@@ -8,6 +8,7 @@ public class SceneLoading : MonoBehaviour, ISceneLoading
     [SerializeField] RectTransform _progress;
     [SerializeField] RectTransform _progressBG;
     [SerializeField] Animation _animation;
+    [SerializeField] CanvasGroup _canvasGroup;
 
     public void Show()
     {
@@ -31,6 +32,7 @@ public class SceneLoading : MonoBehaviour, ISceneLoading
 
     private void OnEnable()
     {
+        _canvasGroup.alpha = 0;
         _progress.sizeDelta = new Vector2(0, _progressBG.sizeDelta.y);
     }
 
