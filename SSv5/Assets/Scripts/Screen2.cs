@@ -7,13 +7,14 @@ using SS.UI;
 
 public class Screen2 : MonoBehaviour, IKeyBack
 {
-    public Text label;
+    [SerializeField] Text _label;
+    public Text Label => _label;
 
     public void OnLoadScene1ButtonTap()
     {
         Core.Load<Scene1>(sceneName: "Scene1", mode: LoadSceneMode.Single, onSceneLoaded: (scene1) =>
         {
-            scene1.data = "Scene1...";
+            scene1.Data = "Scene1...";
         });
     }
 
@@ -45,7 +46,7 @@ public class Screen2 : MonoBehaviour, IKeyBack
     public void OnAddScreen1ButtonTap()
     {
         Core.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.RightShow, hideAnimation: ScreenAnimation.RightHide, useExistingScreen: true, onScreenLoad: (screen) => {
-            screen.label.text = "Screen1";
+            screen.Label.text = "Screen1";
         });
     }
 

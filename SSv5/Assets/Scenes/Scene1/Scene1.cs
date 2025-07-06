@@ -7,17 +7,17 @@ using SS.UI;
 
 public class Scene1 : MonoBehaviour
 {
-    [SerializeField] private Text label;
+    [SerializeField] private Text _label;
 
-    public string data { get; set; }
+    public string Data { get; set; }
 
     private void Start()
     {
-        label.text = data;
+        _label.text = Data;
 
         Core.Load<Scene2>(sceneName: "Scene2", mode: LoadSceneMode.Additive, onSceneLoaded: (scene2) =>
         {
-            scene2.cube.localScale = new Vector3(2, 1, 1);
+            scene2.Cube.localScale = new Vector3(2, 1, 1);
         });
 
         AddScreen1();
@@ -30,8 +30,8 @@ public class Scene1 : MonoBehaviour
 
     private void AddScreen1()
     {
-        Core.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.RightShow, hideAnimation: ScreenAnimation.RightHide, onScreenLoad: (screen) => {
-            screen.label.text = "Screen1";
+        Core.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.None, hideAnimation: ScreenAnimation.RightHide, onScreenLoad: (screen) => {
+            screen.Label.text = "Screen1";
         });
     }
 }

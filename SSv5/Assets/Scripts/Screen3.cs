@@ -7,7 +7,8 @@ using SS.UI;
 
 public class Screen3 : MonoBehaviour, IKeyBack
 {
-    public Text label;
+    [SerializeField] Text _label;
+    public Text Label => _label;
 
     public void OnKeyBack()
     {

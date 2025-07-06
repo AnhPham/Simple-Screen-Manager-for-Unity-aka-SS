@@ -15,47 +15,50 @@ namespace SS.UI
 {
     public class SceneManager : MonoBehaviour
     {
-        #region SerializeField
-        [SerializeField] string m_SceneLoadingPath;
-        [SerializeField] string m_SceneLoadingName;
-        [SerializeField] float m_LoadingMinDuration = 0.5f;
-        [SerializeField] ScreenManager m_ScreenManager;
-        [SerializeField] GeneralManager m_GeneralManager;
+        #region Serialize Fields
+        [SerializeField] protected string _sceneLoadingPath;
+        [SerializeField] protected string _sceneLoadingName;
+        [SerializeField] protected float _loadingMinDuration = 0.5f;
+        [SerializeField] protected ScreenManager _screenManager;
+        [SerializeField] protected GeneralManager _generalManager;
         #endregion
 
         #region Delegate
         public delegate void OnSceneLoad<T>(T t);
         #endregion
 
-        #region Private Member
-        private Scene m_LastLoadedScene;
-        private GameObject m_SceneLoading;
-        private ISceneLoading m_SceneLoadingInterface;
-        private AsyncOperation m_AsyncOperation;
-        private float m_Time;
+        #region Protected Member
+        protected Scene _lastLoadedScene;
+        protected GameObject _sceneLoading;
+        protected ISceneLoading _sceneLoadingInterface;
+        protected AsyncOperation _asyncOperation;
+        protected float _loadingTime;
         #endregion
 
         #region Public Properties
-        public float asyncOperationProgress { get; protected set; }
-        public Scene lastLoadedScene => m_LastLoadedScene;
-        public ScreenManager screenManager { get => m_ScreenManager; set => m_ScreenManager = value; }
-        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public Camera backgroundCamera => m_GeneralManager.backgroundCamera;
-        public UnscaledAnimation sceneShield => m_GeneralManager.sceneShield;
-        public RectTransform sceneLoadingContainer => m_GeneralManager.sceneLoadingContainer;
-        public float animationSpeed => m_GeneralManager.animationSpeed;
+        public float AsyncOperationProgress { get; protected set; }
+        public string LastLoadedSceneName => _lastLoadedScene != null ? _lastLoadedScene.name : string.Empty;
+        public ScreenManager ScreenManager { get => _screenManager; set => _screenManager = value; }
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
+        #endregion
+
+        #region Protected Properties
+        protected Camera BackgroundCamera => _generalManager.BackgroundCamera;
+        protected UnscaledAnimation SceneShield => _generalManager.SceneShield;
+        protected RectTransform SceneLoadingContainer => _generalManager.SceneLoadingContainer;
+        protected float AnimationSpeed => _generalManager.AnimationSpeed;
         #endregion
 
         #region Unity Cycle
-        private void Awake()
+        protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
 
-            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += SceneManager_sceneUnloaded;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += OnActiveSceneChanged;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-            generalManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
 
             SetupCameras();
             SetupCanvases();
@@ -63,184 +66,210 @@ namespace SS.UI
         #endregion
 
         #region Events
-        private void SceneManager_sceneUnloaded(Scene scene)
+        protected virtual void OnSceneUnloaded(Scene scene)
         {
-            backgroundCamera.gameObject.SetActive(true);
+            BackgroundCamera.gameObject.SetActive(true);
         }
 
-        private void SceneManager_activeSceneChanged(Scene scene1, Scene scene2)
+        protected virtual void OnActiveSceneChanged(Scene scene1, Scene scene2)
         {
         }
 
-        private void SceneManager_sceneLoaded(Scene scene, LoadSceneMode mode)
+        protected virtual void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             SetupCameras();
             SetupCanvases();
 
-            m_LastLoadedScene = scene;
+            _lastLoadedScene = scene;
         }
         #endregion
 
         #region Public Functions
-        public void Setup(string sceneLoadingName = "", string sceneLoadingPath = "")
+        public virtual void Setup(string sceneLoadingName = "", string sceneLoadingPath = "")
         {
-            m_SceneLoadingName = sceneLoadingName;
-            m_SceneLoadingPath = sceneLoadingPath;
+            _sceneLoadingName = sceneLoadingName;
+            this._sceneLoadingPath = sceneLoadingPath;
         }
 
-        public void LoadScene<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
+        public virtual void LoadScene<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
         {
             StartCoroutine(CoLoadScene(sceneName, mode, onSceneLoaded, clearAllScreen));
         }
         #endregion
 
-        #region Private Functions
-        private IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
+        #region protected virtual Functions
+        protected virtual IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
         {
-            var isDefaultLoading = string.IsNullOrEmpty(m_SceneLoadingName);
+            // If _sceneLoadingName is null, use a default fading shield. 
+            var isDefaultLoading = string.IsNullOrEmpty(_sceneLoadingName);
 
+            // For single mode
             if (mode == LoadSceneMode.Single)
             {
-                m_AsyncOperation = null;
-                m_Time = 0;
-                asyncOperationProgress = 0;
+                // Reset variables
+                _asyncOperation = null;
+                _loadingTime = 0;
+                AsyncOperationProgress = 0;
 
                 if (isDefaultLoading)
                 {
-                    sceneShield.transform.SetAsLastSibling();
-                    sceneShield.Play("ShieldShow", speed: animationSpeed);
+                    // For default loading, fade in the shield
+                    SceneShield.Play("ShieldShow", speed: AnimationSpeed);
 
-                    yield return new WaitForSecondsRealtime(sceneShield.GetLength("ShieldShow") / animationSpeed);
+                    yield return new WaitForSecondsRealtime(SceneShield.GetLength("ShieldShow") / AnimationSpeed);
                 }
                 else
                 {
-                    if (m_SceneLoading == null)
-                    {
-#if ADDRESSABLE
-                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_SceneLoadingName);
-                        async.Completed += (a => {
-                            if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                            {
-                                CreateSceneLoading(async.Result);
-                                ShowSceneLoading();
-                            }
-                        });
+                    // For custom loading UI
+                    TryCreateAndShowSceneLoading();
 
-                        while (m_SceneLoading == null)
-                        {
-                            yield return 0;
-                        }
-#else
-                        var prefab = Resources.Load<GameObject>(Path.Combine(m_SceneLoadingPath, m_SceneLoadingName));
-                        CreateSceneLoading(prefab);
-                        ShowSceneLoading();
-#endif
-                    }
-                    else
+                    // If there is a component in the custom loading UI which implements ISceneLoading, play its show-animation
+                    if (_sceneLoadingInterface != null)
                     {
-                        ShowSceneLoading();
-                    }
-
-                    if (m_SceneLoadingInterface != null)
-                    {
-                        m_SceneLoadingInterface.Show();
-                        yield return new WaitForSecondsRealtime(m_SceneLoadingInterface.ShowDuration());
+                        _sceneLoadingInterface.Show();
+                        yield return new WaitForSecondsRealtime(_sceneLoadingInterface.ShowDuration());
                     }
                 }
 
+                // By default, clear all exist screens while loading a scene in the single mode.
                 if (clearAllScreen)
                 {
-                    screenManager.ClearAllScreens();
+                    ScreenManager.ClearAllScreens();
                 }
 
-                m_AsyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
-                m_AsyncOperation.allowSceneActivation = isDefaultLoading ? true : false;
-                m_AsyncOperation.completed += (asyncOp) =>
+                // Load scene
+                _asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
+                _asyncOperation.allowSceneActivation = isDefaultLoading ? true : false;
+                _asyncOperation.completed += (asyncOp) =>
                 {
-                    onSceneLoaded?.Invoke(GetSceneComponent<T>(m_LastLoadedScene));
+                    onSceneLoaded?.Invoke(GetSceneComponent<T>(_lastLoadedScene));
                 };
 
-                while (!m_AsyncOperation.isDone)
+                // While loading
+                while (!_asyncOperation.isDone)
                 {
-                    if (!isDefaultLoading)
+                    if (isDefaultLoading)
                     {
-                        if (m_AsyncOperation.progress < 0.9f || m_Time < m_LoadingMinDuration)
-                        {
-                            m_Time += Time.deltaTime;
-                            asyncOperationProgress = m_Time / m_LoadingMinDuration < m_AsyncOperation.progress ? m_Time / m_LoadingMinDuration : m_AsyncOperation.progress;
-                        }
-                        else
-                        {
-                            m_AsyncOperation.allowSceneActivation = true;
-                            asyncOperationProgress = 1f;
-                        }
+                        // For default loading, update the real progress each frame
+                        AsyncOperationProgress = _asyncOperation.progress;
                     }
                     else
                     {
-                        asyncOperationProgress = m_AsyncOperation.progress;
+                        // For custom loading UI, update the progress each frame by real or fake loading progress depends on the loading speed
+                        UpdateProgressForSceneLoading();
                     }
                     yield return null;
                 }
 
-                asyncOperationProgress = 1f;
+                // Loading done, 100%
+                AsyncOperationProgress = 1f;
 
                 if (isDefaultLoading)
                 {
-                    sceneShield.Play("ShieldHide", speed: animationSpeed);
+                    // For default loading, fade out the shield
+                    SceneShield.Play("ShieldHide", speed: AnimationSpeed);
                 }
                 else
                 {
-                    if (m_SceneLoadingInterface != null)
+                    // For custom loading UI, if there is a component which implements ISceneLoading, play its hide-animation
+                    if (_sceneLoadingInterface != null)
                     {
-                        m_SceneLoadingInterface.Hide();
-                        yield return new WaitForSecondsRealtime(m_SceneLoadingInterface.HideDuration());
+                        _sceneLoadingInterface.Hide();
+                        yield return new WaitForSecondsRealtime(_sceneLoadingInterface.HideDuration());
                     }
-                    m_SceneLoading.SetActive(false);
+
+                    // Deactivate the custom scene loading UI
+                    _sceneLoading.SetActive(false);
                 }
             }
             else
             {
-                var asyncOperation2 = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
-                asyncOperation2.completed += (asyncOp) =>
+                // For addtive mode
+                var asyncOperationAdditive = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, mode);
+                asyncOperationAdditive.completed += (asyncOp) =>
                 {
-                    onSceneLoaded?.Invoke(GetSceneComponent<T>(m_LastLoadedScene));
+                    onSceneLoaded?.Invoke(GetSceneComponent<T>(_lastLoadedScene));
                 };
             }
         }
 
-        private void CreateSceneLoading(GameObject prefab)
+        protected virtual void TryCreateAndShowSceneLoading()
         {
-            m_SceneLoading = Instantiate(prefab);
-            m_SceneLoading.name = m_SceneLoadingName;
-            AddToContainer(m_SceneLoading, sceneLoadingContainer);
-            m_SceneLoading.TryGetComponent(out m_SceneLoadingInterface);
+            if (_sceneLoading == null)
+            {
+#if ADDRESSABLE
+                var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(_sceneLoadingName);
+                async.Completed += (a => {
+                    if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
+                    {
+                        CreateSceneLoading(async.Result);
+                        ShowSceneLoading();
+                    }
+                });
+
+                while (_sceneLoading == null)
+                {
+                    yield return 0;
+                }
+#else
+                var prefab = Resources.Load<GameObject>(Path.Combine(_sceneLoadingPath, _sceneLoadingName));
+                CreateSceneLoading(prefab);
+                ShowSceneLoading();
+#endif
+            }
+            else
+            {
+                ShowSceneLoading();
+            }
         }
 
-        private void ShowSceneLoading()
+        protected virtual void UpdateProgressForSceneLoading()
         {
-            m_SceneLoading.SetActive(true);
+            if (_asyncOperation.progress < 0.9f || _loadingTime < _loadingMinDuration)
+            {
+                _loadingTime += Time.deltaTime;
+                AsyncOperationProgress = _loadingTime / _loadingMinDuration < _asyncOperation.progress ? _loadingTime / _loadingMinDuration : _asyncOperation.progress;
+            }
+            else
+            {
+                _asyncOperation.allowSceneActivation = true;
+                AsyncOperationProgress = 1f;
+            }
         }
 
-        private void SetupCameras()
+        protected virtual void CreateSceneLoading(GameObject prefab)
+        {
+            _sceneLoading = Instantiate(prefab);
+            _sceneLoading.name = _sceneLoadingName;
+            _sceneLoading.TryGetComponent(out _sceneLoadingInterface);
+            AddToContainer(_sceneLoading, SceneLoadingContainer);
+        }
+
+        protected virtual void ShowSceneLoading()
+        {
+            _sceneLoading.SetActive(true);
+        }
+
+        protected virtual void SetupCameras()
         {
             var cameras = FindObjectsOfType<Camera>();
 
             for (int i = 0; i < cameras.Length; i++)
             {
-                if (cameras[i] != backgroundCamera)
+                if (cameras[i] != BackgroundCamera)
                 {
                     if (cameras[i].clearFlags == CameraClearFlags.Skybox || cameras[i].clearFlags == CameraClearFlags.SolidColor)
                     {
-                        backgroundCamera.gameObject.SetActive(false);
+                        BackgroundCamera.gameObject.SetActive(false);
                         break;
                     }
                 }
             }
         }
 
-        private void SetupCanvases()
+        protected virtual void SetupCanvases()
         {
-            var screenRatio = (float)Screen.width / Screen.height;
+            var screenRatio = (float)UnityEngine.Screen.width / UnityEngine.Screen.height;
 
             var canvasScalers = FindObjectsOfType<CanvasScaler>(true);
             for (int i = 0; i < canvasScalers.Length; i++)
@@ -249,12 +278,12 @@ namespace SS.UI
             }
         }
 
-        private void SetupCanvasScaler(CanvasScaler canvasScaler, float screenRatio)
+        protected virtual void SetupCanvasScaler(CanvasScaler canvasScaler, float screenRatio)
         {
             canvasScaler.matchWidthOrHeight = screenRatio > 0.44f ? 1f : 0f;
         }
 
-        private T GetSceneComponent<T>(Scene scene) where T : Component
+        protected virtual T GetSceneComponent<T>(Scene scene) where T : Component
         {
             var objects = scene.GetRootGameObjects();
 
@@ -271,7 +300,7 @@ namespace SS.UI
             return null;
         }
 
-        private void AddToContainer(GameObject screen, RectTransform container)
+        protected virtual void AddToContainer(GameObject screen, RectTransform container)
         {
             screen.transform.SetParent(container);
             screen.transform.localPosition = Vector3.zero;

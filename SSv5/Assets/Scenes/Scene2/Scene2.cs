@@ -4,5 +4,6 @@ using UnityEngine;
 
 public class Scene2 : MonoBehaviour
 {
-    public Transform cube;
+    [SerializeField] private Transform _cube;
+    public Transform Cube => _cube;
 }

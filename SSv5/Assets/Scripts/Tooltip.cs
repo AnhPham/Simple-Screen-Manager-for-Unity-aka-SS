@@ -5,20 +5,20 @@ using SS.UI;
 
 public class Tooltip : TooltipBaseController
 {
-    UnityEngine.UI.Text contentText;
+    UnityEngine.UI.Text _contentText;
 
     protected override void Awake()
     {
         base.Awake();
 
-        this.contentText = GetComponentInChildren<UnityEngine.UI.Text>();
+        this._contentText = GetComponentInChildren<UnityEngine.UI.Text>();
     }
 
     protected override void SetText(string text)
     {
-        if (this.contentText != null)
+        if (this._contentText != null)
         {
-            this.contentText.text = text;
+            this._contentText.text = text;
         }
     }
 }

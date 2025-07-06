@@ -313,15 +313,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a85ecb2fa2c426f97b76c44900933a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  backgroundCamera: {fileID: 963194227}
-  canvas: {fileID: 4265156180626030905}
-  sceneShield: {fileID: 5710846472164670336}
-  screenContainer: {fileID: 2440548995555262917}
-  topContainer: {fileID: 2998433135262869041}
-  screenLoadingContainer: {fileID: 6927814240675122046}
-  topShieldContainer: {fileID: 3812794315449902597}
-  sceneLoadingContainer: {fileID: 7924265013673475819}
-  animationSpeed: 1
+  _backgroundCamera: {fileID: 963194227}
+  _mainCanvas: {fileID: 4265156180626030905}
+  _sceneShield: {fileID: 5710846472164670336}
+  _screenContainer: {fileID: 2440548995555262917}
+  _topContainer: {fileID: 2998433135262869041}
+  _screenLoadingContainer: {fileID: 6927814240675122046}
+  _topShieldContainer: {fileID: 3812794315449902597}
+  _sceneLoadingContainer: {fileID: 7924265013673475819}
+  _animationSpeed: 1
 --- !u!1001 &273574107451284992
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -431,9 +431,6 @@ PrefabInstance:
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 5287848264701584260, guid: 297af2abad3514e6b9249e6221b35a19, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5403753266102204278}
-    - targetCorrespondingSourceObject: {fileID: 5287848264701584260, guid: 297af2abad3514e6b9249e6221b35a19, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 2440548995555262917}
     - targetCorrespondingSourceObject: {fileID: 5287848264701584260, guid: 297af2abad3514e6b9249e6221b35a19, type: 3}
       insertIndex: -1
@@ -444,6 +441,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5287848264701584260, guid: 297af2abad3514e6b9249e6221b35a19, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3812794315449902597}
+    - targetCorrespondingSourceObject: {fileID: 5287848264701584260, guid: 297af2abad3514e6b9249e6221b35a19, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5403753266102204278}
     - targetCorrespondingSourceObject: {fileID: 5287848264701584260, guid: 297af2abad3514e6b9249e6221b35a19, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7924265013673475819}

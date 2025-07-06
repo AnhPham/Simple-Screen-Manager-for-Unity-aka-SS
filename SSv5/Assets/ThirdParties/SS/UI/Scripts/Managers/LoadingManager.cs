@@ -15,57 +15,54 @@ namespace SS.UI
 {
     public class LoadingManager : MonoBehaviour
     {
-        #region SerializeField
-        [SerializeField] string m_LoadingName;
-        [SerializeField] string m_LoadingPath;
-        [SerializeField] GeneralManager m_GeneralManager;
+        #region Serialize Fields
+        [SerializeField] protected string _loadingName;
+        [SerializeField] protected string _loadingPath;
+        [SerializeField] protected GeneralManager _generalManager;
         #endregion
 
-        #region Delegate
-        #endregion
-
-        #region Private Member
-        private GameObject m_LoadingObject;
-        private Coroutine m_LoadingCoroutine;
-        private bool m_IsLoading;
+        #region Protected Member
+        protected GameObject _loadingObject;
+        protected Coroutine _loadingCoroutine;
+        protected bool _isLoading;
         #endregion
 
         #region Public Properties
-        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public RectTransform screenLoadingContainer => m_GeneralManager.screenLoadingContainer;
-        public GameObject loadingObject => m_LoadingObject;
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
+        public GameObject LoadingObject => _loadingObject;
+        #endregion
+
+        #region Protected Properties
+        protected RectTransform ScreenLoadingContainer => _generalManager.ScreenLoadingContainer;
         #endregion
 
         #region Unity Cycle
-        private void Awake()
+        protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
 
-            generalManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
         }
-        #endregion
-
-        #region Events
         #endregion
 
         #region Public Functions
-        public void Setup(string loadingName = "", string loadingPath = "")
+        public virtual void Setup(string loadingName = "", string loadingPath = "")
         {
-            m_LoadingName = loadingName;
-            m_LoadingPath = loadingPath;
+            _loadingName = loadingName;
+            _loadingPath = loadingPath;
         }
 
-        public void ShowLoading(bool isShow, float timeout = 0)
+        public virtual void ShowLoading(bool isShow, float timeout = 0)
         {
-            m_IsLoading = isShow;
+            _isLoading = isShow;
             if (isShow)
             {
-                if (!string.IsNullOrEmpty(m_LoadingName))
+                if (!string.IsNullOrEmpty(_loadingName))
                 {
-                    if (m_LoadingObject == null)
+                    if (_loadingObject == null)
                     {
 #if ADDRESSABLE
-                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_LoadingName);
+                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(_loadingName);
                         async.Completed += (a => {
                             if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
                             {
@@ -74,7 +71,7 @@ namespace SS.UI
                             }
                         });
 #else
-                        var prefab = Resources.Load<GameObject>(Path.Combine(m_LoadingPath, m_LoadingName));
+                        var prefab = Resources.Load<GameObject>(Path.Combine(_loadingPath, _loadingName));
                         CreateLoading(prefab);
                         ShowLoading(timeout);
 #endif
@@ -92,61 +89,61 @@ namespace SS.UI
         }
         #endregion
 
-        #region Private Functions
-        private void CreateLoading(GameObject prefab)
+        #region protected Functions
+        protected virtual void CreateLoading(GameObject prefab)
         {
-            m_LoadingObject = Instantiate(prefab);
-            m_LoadingObject.name = m_LoadingName;
-            m_LoadingObject.SetActive(false);
-            AddToContainer(m_LoadingObject, screenLoadingContainer);
+            _loadingObject = Instantiate(prefab);
+            _loadingObject.name = _loadingName;
+            _loadingObject.SetActive(false);
+            AddToContainer(_loadingObject, ScreenLoadingContainer);
         }
 
-        private void ShowLoading(float timeout = 0)
+        protected virtual void ShowLoading(float timeout = 0)
         {
-            if (m_IsLoading)
+            if (_isLoading)
             {
                 StopLoadingCoroutine();
 
                 if (timeout > 0)
                 {
-                    m_LoadingCoroutine = StartCoroutine(CoShowLoading(timeout));
+                    _loadingCoroutine = StartCoroutine(CoShowLoading(timeout));
                 }
                 else
                 {
-                    m_LoadingObject.SetActive(true);
+                    _loadingObject.SetActive(true);
                 }
             }
         }
 
-        private void HideLoading()
+        protected virtual void HideLoading()
         {
             StopLoadingCoroutine();
 
-            if (m_LoadingObject != null)
+            if (_loadingObject != null)
             {
-                m_LoadingObject.SetActive(false);
+                _loadingObject.SetActive(false);
             }
         }
 
-        private void StopLoadingCoroutine()
+        protected virtual void StopLoadingCoroutine()
         {
-            if (m_LoadingCoroutine != null)
+            if (_loadingCoroutine != null)
             {
-                StopCoroutine(m_LoadingCoroutine);
-                m_LoadingCoroutine = null;
+                StopCoroutine(_loadingCoroutine);
+                _loadingCoroutine = null;
             }
         }
 
-        private IEnumerator CoShowLoading(float timeout)
+        protected virtual IEnumerator CoShowLoading(float timeout)
         {
-            m_LoadingObject.SetActive(true);
+            _loadingObject.SetActive(true);
 
             yield return new WaitForSecondsRealtime(timeout);
 
-            m_LoadingObject.SetActive(false);
+            _loadingObject.SetActive(false);
         }
 
-        private void AddToContainer(GameObject screen, RectTransform container)
+        protected virtual void AddToContainer(GameObject screen, RectTransform container)
         {
             screen.transform.SetParent(container);
             screen.transform.localPosition = Vector3.zero;

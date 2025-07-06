@@ -11,18 +11,18 @@ namespace SS.UI
     public class ShieldController : MonoBehaviour
     {
         #region Serialize Fields
-        [SerializeField] UnscaledAnimation _unscaledAnimation;
+        [SerializeField] protected UnscaledAnimation _unscaledAnimation;
         #endregion
 
         #region Public Properties
-        public UnscaledAnimation unscaledAnimation => _unscaledAnimation;
-        public bool beingDestroyed { get; protected set; }
+        public UnscaledAnimation UnscaledAnimation => _unscaledAnimation;
+        public bool BeingDestroyed { get; protected set; }
         #endregion
 
         #region Unity Cycle
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            beingDestroyed = true;
+            BeingDestroyed = true;
         }
         #endregion
     }

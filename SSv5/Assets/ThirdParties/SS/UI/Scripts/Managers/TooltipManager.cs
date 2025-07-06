@@ -15,57 +15,54 @@ namespace SS.UI
 {
     public class TooltipManager : MonoBehaviour
     {
-        #region SerializeField
-        [SerializeField] string m_TooltipName;
-        [SerializeField] string m_TooltipPath;
-        [SerializeField] GeneralManager m_GeneralManager;
+        #region Serialize Fields
+        [SerializeField] protected string _tooltipName;
+        [SerializeField] protected string _tooltipPath;
+        [SerializeField] protected GeneralManager _generalManager;
         #endregion
 
-        #region Delegate
-        #endregion
-
-        #region Private Member
-        private TooltipBaseController m_Tooltip;
+        #region Protected Members
+        protected TooltipBaseController _tooltip;
         #endregion
 
         #region Public Properties
-        public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public RectTransform topContainer => m_GeneralManager.topContainer;
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
+        #endregion
+
+        #region Protected Properties
+        protected RectTransform TopContainer => _generalManager.TopContainer;
         #endregion
 
         #region Unity Cycle
-        private void Awake()
+        protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
 
-            generalManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
         }
-        #endregion
-
-        #region Events
         #endregion
 
         #region Public Functions
-        public void Setup(string tooltipName = "", string tooltipPath = "")
+        public virtual void Setup(string tooltipName = "", string tooltipPath = "")
         {
-            m_TooltipName = tooltipName;
-            m_TooltipPath = tooltipPath;
+            _tooltipName = tooltipName;
+            _tooltipPath = tooltipPath;
         }
 
-        public void LoadAndShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
+        public virtual void LoadAndShowTooltip(string text, Vector3 worldPosition, float targetY = 100f)
         {
-            if (string.IsNullOrEmpty(m_TooltipName))
+            if (string.IsNullOrEmpty(_tooltipName))
                 return;
 
-            if (m_Tooltip != null)
+            if (_tooltip != null)
             {
-                m_Tooltip.transform.SetParent(topContainer, true);
-                m_Tooltip.ShowTooltip(text, worldPosition, targetY);
+                _tooltip.transform.SetParent(TopContainer, true);
+                _tooltip.ShowTooltip(text, worldPosition, targetY);
                 return;
             }
 
 #if ADDRESSABLE
-            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(m_TooltipName);
+            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(_tooltipName);
             async.Completed += (a => {
                 if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
                 {
@@ -73,29 +70,29 @@ namespace SS.UI
                 }
             });
 #else
-            var tooltipPrefab = Resources.Load<GameObject>(Path.Combine(m_TooltipPath, m_TooltipName));
+            var tooltipPrefab = Resources.Load<GameObject>(Path.Combine(_tooltipPath, _tooltipName));
             CreateAndShowTooltip(tooltipPrefab, text, worldPosition, targetY);
 #endif
         }
 
-        public void HideTooltipImmediately()
+        public virtual void HideTooltipImmediately()
         {
-            if (m_Tooltip != null)
+            if (_tooltip != null)
             {
-                m_Tooltip.HideToolTip();
+                _tooltip.HideToolTip();
             }
         }
         #endregion
 
-        #region Private Functions
-        private void CreateAndShowTooltip(GameObject tooltipPrefab, string text, Vector3 worldPosition, float targetY)
+        #region Protected Functions
+        protected virtual void CreateAndShowTooltip(GameObject tooltipPrefab, string text, Vector3 worldPosition, float targetY)
         {
-            var tooltip = Instantiate(tooltipPrefab, topContainer);
-            m_Tooltip = tooltip.GetComponent<TooltipBaseController>();
+            var tooltip = Instantiate(tooltipPrefab, TopContainer);
+            _tooltip = tooltip.GetComponent<TooltipBaseController>();
 
-            if (m_Tooltip != null)
+            if (_tooltip != null)
             {
-                m_Tooltip.ShowTooltip(text, worldPosition, targetY);
+                _tooltip.ShowTooltip(text, worldPosition, targetY);
             }
         }
         #endregion

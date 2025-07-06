@@ -15,7 +15,7 @@ public class Main : MonoBehaviour
 
         Core.Load<Scene1>(sceneName: "Scene1", onSceneLoaded: (scene1) =>
         {
-            scene1.data = "Scene1";
+            scene1.Data = "Scene1";
         });
     }
 }

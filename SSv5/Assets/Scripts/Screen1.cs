@@ -6,9 +6,10 @@ using SS.UI;
 
 public class Screen1 : MonoBehaviour, IKeyBack
 {
-    public Text label;
+    [SerializeField] Text _label;
+    public Text Label => _label;
 
-    private bool pressedSpaceKey;
+    private bool _pressedSpaceKey;
 
     public void OnKeyBack()
     {
@@ -18,36 +19,36 @@ public class Screen1 : MonoBehaviour, IKeyBack
     public void OnAddScreen2ButtonTap()
     {
         Core.Add<Screen2>(screenName: "Screen2", animationObjectName: "AnimationRoot", useExistingScreen: true, onScreenLoad: (screen) => {
-            screen.label.text = "Screen2";
+            screen.Label.text = "Screen2";
         });
     }
 
     public void OnAddScreen2UntilNoScreenButtonTap()
     {
         Core.Add<Screen2>(screenName: "Screen2", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
-            screen.label.text = "Screen2";
+            screen.Label.text = "Screen2";
         }, waitUntilNoScreen: true);
     }
 
     public void OnAddScreen2UntilSpacePressedButtonTap()
     {
         Core.Add<Screen2>(screenName: "Screen2", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
-            screen.label.text = "Screen2";
-            pressedSpaceKey = false;
+            screen.Label.text = "Screen2";
+            _pressedSpaceKey = false;
         }, addCondition: WaitSpaceKey);
     }
 
     public void OnAddScreen2ButNotHideMeButtonTap()
     {
         Core.Add<Screen2>(screenName: "Screen2", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
-            screen.label.text = "Screen2";
+            screen.Label.text = "Screen2";
         }, hideTopScreen: false);
     }
 
     public void OnAddScreen3AndDestroyMeButtonTap()
     {
         Core.Add<Screen3>(screenName: "Screen3", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
-            screen.label.text = "Screen3";
+            screen.Label.text = "Screen3";
         }, destroyTopScreen: true);
     }
 
@@ -56,20 +57,20 @@ public class Screen1 : MonoBehaviour, IKeyBack
         Core.Destroy();
 
         Core.Add<Screen3>(screenName: "Screen3", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
-            screen.label.text = "Screen3";
+            screen.Label.text = "Screen3";
         });
     }
 
     private bool WaitSpaceKey()
     {
-        return pressedSpaceKey;
+        return _pressedSpaceKey;
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            pressedSpaceKey = true;
+            _pressedSpaceKey = true;
         }
     }
 }

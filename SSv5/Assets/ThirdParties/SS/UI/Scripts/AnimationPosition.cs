@@ -13,33 +13,33 @@ namespace SS.UI
     /// </summary>
     public class AnimationPosition : MonoBehaviour
     {
-        [SerializeField] float m_BaseWidth = 720;
-        [SerializeField] float m_BaseHeight = 1600;
+        [SerializeField] protected float _baseWidth = 720;
+        [SerializeField] protected float _baseHeight = 1600;
 
-        float m_Width;
-        float m_Height;
-        RectTransform m_Rect;
-        UnscaledAnimation m_Animation;
+        protected float _width;
+        protected float _height;
+        protected RectTransform _rect;
+        protected UnscaledAnimation _animation;
 
-        private void Awake()
+        protected virtual void Awake()
         {
-            m_Animation = GetComponent<UnscaledAnimation>();
-            m_Rect = GetComponent<RectTransform>();
-            m_Height = m_BaseHeight;
-            m_Width = m_Height * Screen.width / Screen.height;
+            _animation = GetComponent<UnscaledAnimation>();
+            _rect = GetComponent<RectTransform>();
+            _height = _baseHeight;
+            _width = _height * Screen.width / Screen.height;
         }
 
-        private void LateUpdate()
+        protected virtual void LateUpdate()
         {
-            if (m_Animation != null && m_Animation.isPlaying)
+            if (_animation != null && _animation.IsPlaying)
             {
                 Reposition();
             }
         }
 
-        public void Reposition()
+        public virtual void Reposition()
         {
-            m_Rect.anchoredPosition = new Vector2(m_Rect.anchoredPosition.x * m_Width / m_BaseWidth, m_Rect.anchoredPosition.y * m_Height / m_BaseHeight);
+            _rect.anchoredPosition = new Vector2(_rect.anchoredPosition.x * _width / _baseWidth, _rect.anchoredPosition.y * _height / _baseHeight);
         }
     }
 }

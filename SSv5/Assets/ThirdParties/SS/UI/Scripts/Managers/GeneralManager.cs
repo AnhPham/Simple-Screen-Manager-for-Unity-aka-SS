@@ -12,29 +12,41 @@ namespace SS.UI
 {
     public class GeneralManager : MonoBehaviour
     {
-        #region Public Members
-        public Camera backgroundCamera;
-        public Canvas canvas;
-        public UnscaledAnimation sceneShield;
-        public RectTransform screenContainer;
-        public RectTransform topContainer;
-        public RectTransform screenLoadingContainer;
-        public RectTransform topShieldContainer;
-        public RectTransform sceneLoadingContainer;
-        public float animationSpeed = 1;
+        #region Serialize Fields
+        [SerializeField] protected Camera _backgroundCamera;
+        [SerializeField] protected Canvas _mainCanvas;
+        [SerializeField] protected UnscaledAnimation _sceneShield;
+        [SerializeField] protected RectTransform _screenContainer;
+        [SerializeField] protected RectTransform _topContainer;
+        [SerializeField] protected RectTransform _screenLoadingContainer;
+        [SerializeField] protected RectTransform _topShieldContainer;
+        [SerializeField] protected RectTransform _sceneLoadingContainer;
+        [SerializeField] protected float _animationSpeed = 1;
+        #endregion
+
+        #region Public Properties
+        public Camera BackgroundCamera => _backgroundCamera;
+        public Canvas MainCanvas => _mainCanvas;
+        public UnscaledAnimation SceneShield => _sceneShield;
+        public RectTransform ScreenContainer => _screenContainer;
+        public RectTransform TopContainer => _topContainer;
+        public RectTransform ScreenLoadingContainer => _screenLoadingContainer;
+        public RectTransform TopShieldContainer => _topShieldContainer;
+        public RectTransform SceneLoadingContainer => _sceneLoadingContainer;
+        public float AnimationSpeed => _animationSpeed;
         #endregion
 
         #region Unity Cycle
-        private void Awake()
+        protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
         }
         #endregion
 
         #region Public Methods
-        public void Setup(float animationSpeed)
+        public virtual void Setup(float animationSpeed)
         {
-            this.animationSpeed = animationSpeed;
+            _animationSpeed = animationSpeed;
         }
         #endregion
     }
