@@ -78,8 +78,8 @@ namespace SS.UI
             s_screenManager.loadingManager = s_loadingManager;
             s_screenManager.generalManager = s_generalManager;
 
-            s_sceneManager.screenManager = s_screenManager;
-            s_sceneManager.generalManager = s_generalManager;
+            s_sceneManager.Screen = s_screenManager;
+            s_sceneManager.General = s_generalManager;
 
             s_shieldManager.screenManager = s_screenManager;
             s_shieldManager.generalManager = s_generalManager;
@@ -512,7 +512,7 @@ namespace SS.UI
             {
                 if (s_sceneManager != null)
                 {
-                    return s_sceneManager.asyncOperationProgress;
+                    return s_sceneManager.AsyncOperationProgress;
                 }
 
                 return 0f;

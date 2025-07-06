@@ -278,7 +278,7 @@ namespace SS.UI
             }
 
             // Set fromScreen is the last loaded scene name (then will set it again after check the top screen)
-            var fromScreen = GetLastLoadedSceneName();
+            var fromScreen = sceneManager.LastLoadedSceneName;
 
             // Try find existing screen
             var hasExistingScreen = false; T existingScreen = null; int existingScreenIndex = 0;
@@ -318,11 +318,6 @@ namespace SS.UI
             {
                 HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually);
             }
-        }
-
-        private string GetLastLoadedSceneName()
-        {
-            return sceneManager.lastLoadedScene != null ? sceneManager.lastLoadedScene.name : string.Empty;
         }
 
         private bool TryFindExistingScreen<T>(out T existingScreen, out int index) where T : Component
