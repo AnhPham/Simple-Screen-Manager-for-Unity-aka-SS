@@ -67,13 +67,13 @@ namespace SS.UI
             shield.transform.SetAsLastSibling();
             shield.gameObject.SetActive(false);
 
-            UpdateScreenShieldColor(shield);
+            UpdateShieldColor(shield);
             AddShieldTapEvent(shield);
             _shieldList.Add(shield);
 
             if (showAfterCreate)
             {
-                ShowScreenShield(shield);
+                ShowShield(shield);
             }
 
             return shield;
@@ -139,13 +139,13 @@ namespace SS.UI
             ScreenManager.CloseScreen();
         }
 
-        protected virtual void UpdateScreenShieldColor(ShieldController shield)
+        protected virtual void UpdateShieldColor(ShieldController shield)
         {
             var image = shield.GetComponent<Image>();
             image.color = _screenShieldColor;
         }
 
-        protected virtual void ShowScreenShield(ShieldController shield)
+        protected virtual void ShowShield(ShieldController shield)
         {
             if (!shield.gameObject.activeInHierarchy || (shield.UnscaledAnimation.IsPlaying && shield.UnscaledAnimation.CurrentClipName == "ShieldHide"))
             {
