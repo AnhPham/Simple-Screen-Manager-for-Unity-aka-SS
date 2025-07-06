@@ -30,7 +30,7 @@ namespace SS.UI
 
         #region Public Properties
         public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public RectTransform topContainer => m_GeneralManager.topContainer;
+        public RectTransform topContainer => m_GeneralManager.TopContainer;
         #endregion
 
         #region Unity Cycle

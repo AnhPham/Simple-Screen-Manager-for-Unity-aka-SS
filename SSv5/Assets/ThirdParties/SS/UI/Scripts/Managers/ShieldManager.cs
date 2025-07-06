@@ -33,9 +33,9 @@ namespace SS.UI
         public List<ShieldController> shieldList => m_ShieldList;
         public ScreenManager screenManager { get => m_ScreenManager; set => m_ScreenManager = value; }
         public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public RectTransform screenContainer => m_GeneralManager.screenContainer;
-        public RectTransform topShieldContainer => m_GeneralManager.topShieldContainer;
-        public float animationSpeed => m_GeneralManager.animationSpeed;
+        public RectTransform screenContainer => m_GeneralManager.ScreenContainer;
+        public RectTransform topShieldContainer => m_GeneralManager.TopShieldContainer;
+        public float animationSpeed => m_GeneralManager.AnimationSpeed;
         #endregion
 
         #region Unity Cycle

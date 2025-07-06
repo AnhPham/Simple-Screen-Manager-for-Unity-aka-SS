@@ -32,7 +32,7 @@ namespace SS.UI
 
         #region Public Properties
         public GeneralManager generalManager { get => m_GeneralManager; set => m_GeneralManager = value; }
-        public RectTransform screenLoadingContainer => m_GeneralManager.screenLoadingContainer;
+        public RectTransform screenLoadingContainer => m_GeneralManager.ScreenLoadingContainer;
         public GameObject loadingObject => m_LoadingObject;
         #endregion
 

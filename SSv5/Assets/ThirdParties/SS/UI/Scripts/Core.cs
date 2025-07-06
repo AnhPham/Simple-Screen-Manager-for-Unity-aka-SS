@@ -496,7 +496,7 @@ namespace SS.UI
             {
                 if (s_generalManager != null)
                 {
-                    return s_generalManager.canvas;
+                    return s_generalManager.MainCanvas;
                 }
 
                 return null;

@@ -84,10 +84,10 @@ namespace SS.UI
         public int pendingScreens { get => m_PendingScreens; set => m_PendingScreens = value; }
         public bool isNoMoreScreen { get => m_ScreenList.Count <= 0 && m_LoadingScreens <= 0 && m_AnimatingScreens <= 0; }
         public List<ScreenCoroutine> screenCoroutines => m_ScreenCoroutines;
-        public Canvas canvas => m_GeneralManager.canvas;
-        public RectTransform screenContainer => m_GeneralManager.screenContainer;
-        public RectTransform topContainer => m_GeneralManager.topContainer;
-        public float animationSpeed => m_GeneralManager.animationSpeed;
+        public Canvas canvas => m_GeneralManager.MainCanvas;
+        public RectTransform screenContainer => m_GeneralManager.ScreenContainer;
+        public RectTransform topContainer => m_GeneralManager.TopContainer;
+        public float animationSpeed => m_GeneralManager.AnimationSpeed;
         #endregion
 
         #region Private Short Function

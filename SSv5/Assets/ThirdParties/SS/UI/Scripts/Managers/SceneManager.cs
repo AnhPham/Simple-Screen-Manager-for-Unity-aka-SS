@@ -43,10 +43,10 @@ namespace SS.UI
         #endregion
 
         #region Protected Properties
-        protected Camera BackgroundCamera => _generalManager.backgroundCamera;
-        protected UnscaledAnimation SceneShield => _generalManager.sceneShield;
-        protected RectTransform SceneLoadingContainer => _generalManager.sceneLoadingContainer;
-        protected float AnimationSpeed => _generalManager.animationSpeed;
+        protected Camera BackgroundCamera => _generalManager.BackgroundCamera;
+        protected UnscaledAnimation SceneShield => _generalManager.SceneShield;
+        protected RectTransform SceneLoadingContainer => _generalManager.SceneLoadingContainer;
+        protected float AnimationSpeed => _generalManager.AnimationSpeed;
         #endregion
 
         #region Unity Cycle
