@@ -73,10 +73,10 @@ namespace SS.UI
                 s_loadingManager = Object.Instantiate(Resources.Load<SS.UI.LoadingManager>(loadingManagerPath));
             }
 
-            s_screenManager.sceneManager = s_sceneManager;
-            s_screenManager.shieldManager = s_shieldManager;
-            s_screenManager.loadingManager = s_loadingManager;
-            s_screenManager.generalManager = s_generalManager;
+            s_screenManager.Scene = s_sceneManager;
+            s_screenManager.Shield = s_shieldManager;
+            s_screenManager.Loading = s_loadingManager;
+            s_screenManager.General = s_generalManager;
 
             s_sceneManager.Screen = s_screenManager;
             s_sceneManager.General = s_generalManager;
@@ -193,9 +193,9 @@ namespace SS.UI
         {
             if (s_screenManager != null)
             {
-                s_screenManager.pendingScreens++;
+                s_screenManager.PendingScreens++;
                 var c = s_screenManager.StartCoroutine(s_screenManager.AddScreen<T>(screenName, showAnimation, hideAnimation, animationObjectName, useExistingScreen, onScreenLoad, hasShield, manually, addCondition, waitUntilNoScreen, destroyTopScreen, hideTopScreen));
-                s_screenManager.screenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
+                s_screenManager.ScreenCoroutines.Add(new SS.UI.ScreenManager.ScreenCoroutine(c, screenName));
             }
         }
 
@@ -215,7 +215,7 @@ namespace SS.UI
         {
             if (s_screenManager != null)
             {
-                s_screenManager.AddToContainer(screen, s_screenManager.screenContainer);
+                s_screenManager.AddToContainer(screen, s_screenManager.ScreenContainer);
             }
         }
 
@@ -382,7 +382,7 @@ namespace SS.UI
             {
                 if (s_screenManager != null)
                 {
-                    return s_screenManager.topContainer;
+                    return s_screenManager.TopContainer;
                 }
 
                 return null;
@@ -441,7 +441,7 @@ namespace SS.UI
         {
             if (s_screenManager != null)
             {
-                return s_screenManager.isNoMoreScreen;
+                return s_screenManager.IsNoMoreScreen;
             }
 
             return true;
@@ -481,7 +481,7 @@ namespace SS.UI
         {
             if (s_screenManager != null)
             {
-                return s_screenManager.pendingScreens;
+                return s_screenManager.PendingScreens;
             }
 
             return 0;
