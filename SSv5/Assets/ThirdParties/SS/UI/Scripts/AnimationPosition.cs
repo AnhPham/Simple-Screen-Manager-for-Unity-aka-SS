@@ -13,15 +13,15 @@ namespace SS.UI
     /// </summary>
     public class AnimationPosition : MonoBehaviour
     {
-        [SerializeField] float _baseWidth = 720;
-        [SerializeField] float _baseHeight = 1600;
+        [SerializeField] protected float _baseWidth = 720;
+        [SerializeField] protected float _baseHeight = 1600;
 
-        float _width;
-        float _height;
-        RectTransform _rect;
-        UnscaledAnimation _animation;
+        protected float _width;
+        protected float _height;
+        protected RectTransform _rect;
+        protected UnscaledAnimation _animation;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             _animation = GetComponent<UnscaledAnimation>();
             _rect = GetComponent<RectTransform>();
@@ -29,7 +29,7 @@ namespace SS.UI
             _width = _height * Screen.width / Screen.height;
         }
 
-        private void LateUpdate()
+        protected virtual void LateUpdate()
         {
             if (_animation != null && _animation.IsPlaying)
             {
@@ -37,7 +37,7 @@ namespace SS.UI
             }
         }
 
-        public void Reposition()
+        public virtual void Reposition()
         {
             _rect.anchoredPosition = new Vector2(_rect.anchoredPosition.x * _width / _baseWidth, _rect.anchoredPosition.y * _height / _baseHeight);
         }

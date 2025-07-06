@@ -5,37 +5,37 @@ using SS.UI;
 
 public class SceneLoading : MonoBehaviour, ISceneLoading
 {
-    [SerializeField] RectTransform m_Progress;
-    [SerializeField] RectTransform m_ProgressBG;
-    [SerializeField] Animation m_Animation;
+    [SerializeField] RectTransform _progress;
+    [SerializeField] RectTransform _progressBG;
+    [SerializeField] Animation _animation;
 
     public void Show()
     {
-        m_Animation.Play("SceneLoadingShow");
+        _animation.Play("SceneLoadingShow");
     }
 
     public void Hide()
     {
-        m_Animation.Play("SceneLoadingHide");
+        _animation.Play("SceneLoadingHide");
     }
 
     public float ShowDuration()
     {
-        return m_Animation["SceneLoadingShow"].length;
+        return _animation["SceneLoadingShow"].length;
     }
 
     public float HideDuration()
     {
-        return m_Animation["SceneLoadingHide"].length;
+        return _animation["SceneLoadingHide"].length;
     }
 
     private void OnEnable()
     {
-        m_Progress.sizeDelta = new Vector2(0, m_ProgressBG.sizeDelta.y);
+        _progress.sizeDelta = new Vector2(0, _progressBG.sizeDelta.y);
     }
 
     private void Update()
     {
-        m_Progress.sizeDelta = new Vector2(Core.asyncOperationProgress * m_ProgressBG.sizeDelta.x, m_ProgressBG.sizeDelta.y);
+        _progress.sizeDelta = new Vector2(Core.asyncOperationProgress * _progressBG.sizeDelta.x, _progressBG.sizeDelta.y);
     }
 }

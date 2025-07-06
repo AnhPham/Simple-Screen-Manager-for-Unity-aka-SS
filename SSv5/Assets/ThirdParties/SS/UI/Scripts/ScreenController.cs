@@ -21,7 +21,7 @@ namespace SS.UI
         #endregion
 
         #region Unity Cycle
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             BeingDestroyed = true;
 
