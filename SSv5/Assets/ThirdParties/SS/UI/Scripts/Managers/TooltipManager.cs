@@ -26,7 +26,7 @@ namespace SS.UI
         #endregion
 
         #region Public Properties
-        public GeneralManager General { get => _generalManager; set => _generalManager = value; }
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
         #endregion
 
         #region Protected Properties
@@ -38,7 +38,7 @@ namespace SS.UI
         {
             DontDestroyOnLoad(gameObject);
 
-            General = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
         }
         #endregion
 

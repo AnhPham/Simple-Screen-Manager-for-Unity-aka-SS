@@ -27,8 +27,8 @@ namespace SS.UI
 
         #region Public Properties
         public GameObject TransparentTopShield => _transparentTopShield;
-        public ScreenManager Screen { get => _screenManager; set => _screenManager = value; }
-        public GeneralManager General { get => _generalManager; set => _generalManager = value; }
+        public ScreenManager ScreenManager { get => _screenManager; set => _screenManager = value; }
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
         #endregion
 
         #region Protected Properties
@@ -43,7 +43,7 @@ namespace SS.UI
         {
             DontDestroyOnLoad(gameObject);
 
-            General = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
             _transparentTopShield = CreateTransparentTopShield();
         }
         #endregion
@@ -58,17 +58,6 @@ namespace SS.UI
         public virtual void Setup(bool closeOnTappingShield = false)
         {
             _closeOnTappingShield = closeOnTappingShield;
-        }
-
-        public virtual void DestroyAllShields()
-        {
-            for (int i = 0; i < _shieldList.Count; i++)
-            {
-                var shield = _shieldList[i];
-                Destroy(shield.gameObject);
-            }
-
-            _shieldList.Clear();
         }
 
         public virtual ShieldController CreateShield(bool showAfterCreate = false)
@@ -90,7 +79,7 @@ namespace SS.UI
             return shield;
         }
 
-        public virtual void HideScreenShield(ShieldController shield)
+        public virtual void HideShield(ShieldController shield)
         {
             if (shield.gameObject.activeInHierarchy)
             {
@@ -101,7 +90,7 @@ namespace SS.UI
             }
         }
 
-        public virtual void ShowShield()
+        public virtual void ShowAllShields()
         {
             for (int i = 0; i < ShieldList.Count; i++)
             {
@@ -119,7 +108,7 @@ namespace SS.UI
             }
         }
 
-        public virtual void HideShield()
+        public virtual void HideAllShields()
         {
             for (int i = 0; i < ShieldList.Count; i++)
             {
@@ -131,12 +120,23 @@ namespace SS.UI
                 }
             }
         }
+
+        public virtual void DestroyAllShields()
+        {
+            for (int i = 0; i < _shieldList.Count; i++)
+            {
+                var shield = _shieldList[i];
+                Destroy(shield.gameObject);
+            }
+
+            _shieldList.Clear();
+        }
         #endregion
 
         #region Protected Functions
         protected virtual void OnShieldTap()
         {
-            Screen.CloseScreen();
+            ScreenManager.CloseScreen();
         }
 
         protected virtual void UpdateScreenShieldColor(ShieldController shield)

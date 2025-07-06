@@ -11,14 +11,14 @@ namespace SS.UI
 {
     public class Core
     {
-        private static GeneralManager _generalManager;
-        private static ScreenManager _screenManager;
-        private static SceneManager _sceneManager;
-        private static ShieldManager _shieldManager;
-        private static TooltipManager _tooltipManager;
-        private static LoadingManager _loadingManager;
+        protected static GeneralManager _generalManager;
+        protected static ScreenManager _screenManager;
+        protected static SceneManager _sceneManager;
+        protected static ShieldManager _shieldManager;
+        protected static TooltipManager _tooltipManager;
+        protected static LoadingManager _loadingManager;
 
-        private static bool _initialized = false;
+        protected static bool _initialized = false;
 
         #region Public Static
         /// <summary>
@@ -73,20 +73,20 @@ namespace SS.UI
                 _loadingManager = Object.Instantiate(Resources.Load<SS.UI.LoadingManager>(loadingManagerPath));
             }
 
-            _screenManager.Scene = _sceneManager;
-            _screenManager.Shield = _shieldManager;
-            _screenManager.Loading = _loadingManager;
-            _screenManager.General = _generalManager;
+            _screenManager.SceneManager = _sceneManager;
+            _screenManager.ShieldManager = _shieldManager;
+            _screenManager.LoadingManager = _loadingManager;
+            _screenManager.GeneralManager = _generalManager;
 
-            _sceneManager.Screen = _screenManager;
-            _sceneManager.General = _generalManager;
+            _sceneManager.ScreenManager = _screenManager;
+            _sceneManager.GeneralManager = _generalManager;
 
-            _shieldManager.Screen = _screenManager;
-            _shieldManager.General = _generalManager;
+            _shieldManager.ScreenManager = _screenManager;
+            _shieldManager.GeneralManager = _generalManager;
 
-            _tooltipManager.General = _generalManager;
+            _tooltipManager.GeneralManager = _generalManager;
 
-            _loadingManager.General = _generalManager;
+            _loadingManager.GeneralManager = _generalManager;
         }
 
         /// <summary>
@@ -396,7 +396,7 @@ namespace SS.UI
         {
             if (_shieldManager != null)
             {
-                _shieldManager.ShowShield();
+                _shieldManager.ShowAllShields();
             }
         }
 
@@ -407,7 +407,7 @@ namespace SS.UI
         {
             if (_shieldManager != null)
             {
-                _shieldManager.HideShield();
+                _shieldManager.HideAllShields();
             }
         }
 

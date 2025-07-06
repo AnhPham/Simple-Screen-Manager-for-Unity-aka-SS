@@ -38,8 +38,8 @@ namespace SS.UI
         #region Public Properties
         public float AsyncOperationProgress { get; protected set; }
         public string LastLoadedSceneName => _lastLoadedScene != null ? _lastLoadedScene.name : string.Empty;
-        public ScreenManager Screen { get => _screenManager; set => _screenManager = value; }
-        public GeneralManager General { get => _generalManager; set => _generalManager = value; }
+        public ScreenManager ScreenManager { get => _screenManager; set => _screenManager = value; }
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
         #endregion
 
         #region Protected Properties
@@ -58,7 +58,7 @@ namespace SS.UI
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
             UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-            General = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
 
             SetupCameras();
             SetupCanvases();
@@ -134,7 +134,7 @@ namespace SS.UI
                 // By default, clear all exist screens while loading a scene in the single mode.
                 if (clearAllScreen)
                 {
-                    Screen.ClearAllScreens();
+                    ScreenManager.ClearAllScreens();
                 }
 
                 // Load scene

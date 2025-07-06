@@ -77,12 +77,12 @@ namespace SS.UI
         #endregion
 
         #region Public Properties
-        public SceneManager Scene { get => _sceneManager; set => _sceneManager = value; }
-        public ShieldManager Shield { get => _shieldManager; set => _shieldManager = value; }
-        public LoadingManager Loading { get => _loadingManager; set => _loadingManager = value; }
-        public GeneralManager General { get => _generalManager; set => _generalManager = value; }
+        public SceneManager SceneManager { get => _sceneManager; set => _sceneManager = value; }
+        public ShieldManager ShieldManager { get => _shieldManager; set => _shieldManager = value; }
+        public LoadingManager LoadingManager { get => _loadingManager; set => _loadingManager = value; }
+        public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
         public int PendingScreens { get => _pendingScreens; set => _pendingScreens = value; }
-        public bool IsNoMoreScreen { get => _screenList.Count <= 0 && _loadingScreens <= 0 && _animatingScreens <= 0; }
+        public bool IsNoMoreScreen => _screenList.Count <= 0 && _loadingScreens <= 0 && _animatingScreens <= 0;
         public List<ScreenCoroutine> ScreenCoroutines => _screenCoroutines;
         public RectTransform ScreenContainer => _generalManager.ScreenContainer;
         public RectTransform TopContainer => _generalManager.TopContainer;
@@ -93,7 +93,7 @@ namespace SS.UI
         #endregion
 
         #region protected Short Function
-        protected bool IsLoadingVisible() => Loading.LoadingObject != null && Loading.LoadingObject.activeInHierarchy;
+        protected bool IsLoadingVisible() => LoadingManager.LoadingObject != null && LoadingManager.LoadingObject.activeInHierarchy;
         protected bool IsAnyScreenActive() => _screenList.Count > 0;
         protected bool IsAnyScreenLoading() => _loadingScreens > 0;
         protected bool IsAnyScreenAnimating() => _animatingScreens > 0;
@@ -107,7 +107,7 @@ namespace SS.UI
         protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
-            General = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindObjectOfType<GeneralManager>();
         }
 
         protected virtual void Update()
@@ -206,7 +206,7 @@ namespace SS.UI
             }
 
             // Destroy all shields
-            Shield.DestroyAllShields();
+            ShieldManager.DestroyAllShields();
 
             // Reset count variables
             _loadingScreens = 0;
@@ -280,7 +280,7 @@ namespace SS.UI
             }
 
             // Set fromScreen is the last loaded scene name (then will set it again after check the top screen)
-            var fromScreen = Scene.LastLoadedSceneName;
+            var fromScreen = SceneManager.LastLoadedSceneName;
 
             // Try find existing screen
             var hasExistingScreen = false; T existingScreen = null; int existingScreenIndex = 0;
@@ -595,12 +595,12 @@ namespace SS.UI
         #region Shield
         protected virtual ShieldController CreateShield(bool showAfterCreate = false)
         {
-            return Shield.CreateShield(showAfterCreate);
+            return ShieldManager.CreateShield(showAfterCreate);
         }
 
         protected virtual void HideScreenShield(ShieldController shield)
         {
-            Shield.HideScreenShield(shield);
+            ShieldManager.HideShield(shield);
         }
         #endregion
 
@@ -711,7 +711,7 @@ namespace SS.UI
             if (anim.GetClip(animationName) != null)
             {
                 // Show the transparent top shield before playing any screen animation, to prevent any touch
-                Shield.TransparentTopShield.SetActive(true);
+                ShieldManager.TransparentTopShield.SetActive(true);
 
                 // Get Unscaled anim and pause the animation at frame 0.
                 var unscaledAnim = anim.GetComponent<UnscaledAnimation>();
@@ -737,7 +737,7 @@ namespace SS.UI
                 yield return new WaitForSecondsRealtime(anim[animationName].length / AnimationSpeed);
 
                 // Turn off transparent top shield after animation end
-                Shield.TransparentTopShield.SetActive(false);
+                ShieldManager.TransparentTopShield.SetActive(false);
             }
 
             if (screenToBeDestroyed != null)
