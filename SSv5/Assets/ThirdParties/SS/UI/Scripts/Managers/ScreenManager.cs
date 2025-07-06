@@ -709,7 +709,7 @@ namespace SS.UI
             if (anim.GetClip(animationName) != null)
             {
                 // Show the transparent top shield before playing any screen animation, to prevent any touch
-                shieldManager.transparentTopShield.SetActive(true);
+                shieldManager.TransparentTopShield.SetActive(true);
 
                 // Get Unscaled anim and pause the animation at frame 0.
                 var unscaledAnim = anim.GetComponent<UnscaledAnimation>();
@@ -735,7 +735,7 @@ namespace SS.UI
                 yield return new WaitForSecondsRealtime(anim[animationName].length / animationSpeed);
 
                 // Turn off transparent top shield after animation end
-                shieldManager.transparentTopShield.SetActive(false);
+                shieldManager.TransparentTopShield.SetActive(false);
             }
 
             if (screenToBeDestroyed != null)

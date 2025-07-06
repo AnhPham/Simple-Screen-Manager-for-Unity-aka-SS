@@ -81,8 +81,8 @@ namespace SS.UI
             s_sceneManager.Screen = s_screenManager;
             s_sceneManager.General = s_generalManager;
 
-            s_shieldManager.screenManager = s_screenManager;
-            s_shieldManager.generalManager = s_generalManager;
+            s_shieldManager.Screen = s_screenManager;
+            s_shieldManager.General = s_generalManager;
 
             s_tooltipManager.generalManager = s_generalManager;
 
