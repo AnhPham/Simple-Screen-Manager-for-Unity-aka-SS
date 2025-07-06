@@ -86,7 +86,7 @@ namespace SS.UI
 
             s_tooltipManager.generalManager = s_generalManager;
 
-            s_loadingManager.generalManager = s_generalManager;
+            s_loadingManager.General = s_generalManager;
         }
 
         /// <summary>

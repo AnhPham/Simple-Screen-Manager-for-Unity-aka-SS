@@ -91,7 +91,7 @@ namespace SS.UI
         #endregion
 
         #region Private Short Function
-        private bool IsLoadingVisible() => loadingManager.loadingObject != null && loadingManager.loadingObject.activeInHierarchy;
+        private bool IsLoadingVisible() => loadingManager.LoadingObject != null && loadingManager.LoadingObject.activeInHierarchy;
         private bool IsAnyScreenActive() => m_ScreenList.Count > 0;
         private bool IsAnyScreenLoading() => m_LoadingScreens > 0;
         private bool IsAnyScreenAnimating() => m_AnimatingScreens > 0;
