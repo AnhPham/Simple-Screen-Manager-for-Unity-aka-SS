@@ -14,6 +14,7 @@ namespace SS.UI
 {
     public enum ScreenAnimation
     {
+        None,       // No animation
         BottomHide, // The screen slides from the center to the bottom when hiding.
         BottomShow, // The screen slides from the bottom to the center when showing.
         FadeHide,   // The screen fades out when hiding.
@@ -253,7 +254,6 @@ namespace SS.UI
                 {
                     StopCoroutine(sc.Coroutine);
                     sc.Coroutine = null;
-                    Debug.LogWarning("CM: StopCoroutine " + sc.ScreenName.ToString());
                 }
             }
             ScreenCoroutines.Clear();
@@ -641,7 +641,7 @@ namespace SS.UI
             // Loop all animation names
             for (int i = 0; i < animationNames.Length; i++)
             {
-                if (!string.IsNullOrEmpty(animationNames[i]))
+                if (!string.IsNullOrEmpty(animationNames[i]) && string.Compare(animationNames[i], "None") != 0)
                 {
                     // If has no Animation Clip
                     if (anim.GetClip(animationNames[i]) == null)
