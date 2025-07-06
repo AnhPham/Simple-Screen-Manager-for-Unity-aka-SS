@@ -283,9 +283,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b08c7b3c8326759429d707e50b6895a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Progress: {fileID: 3418422984046714063}
-  m_ProgressBG: {fileID: 408106300}
-  m_Animation: {fileID: 6418102818416194450}
+  _progress: {fileID: 3418422984046714063}
+  _progressBG: {fileID: 408106300}
+  _animation: {fileID: 6418102818416194450}
 --- !u!111 &6418102818416194450
 Animation:
   m_ObjectHideFlags: 0

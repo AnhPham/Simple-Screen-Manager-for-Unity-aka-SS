@@ -30,7 +30,7 @@ public class Scene1 : MonoBehaviour
 
     private void AddScreen1()
     {
-        Core.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.RightShow, hideAnimation: ScreenAnimation.RightHide, onScreenLoad: (screen) => {
+        Core.Add<Screen1>(screenName: "Screen1", showAnimation: ScreenAnimation.None, hideAnimation: ScreenAnimation.RightHide, onScreenLoad: (screen) => {
             screen.Label.text = "Screen1";
         });
     }
