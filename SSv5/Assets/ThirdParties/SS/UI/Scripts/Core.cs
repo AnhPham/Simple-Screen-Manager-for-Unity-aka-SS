@@ -84,7 +84,7 @@ namespace SS.UI
             s_shieldManager.Screen = s_screenManager;
             s_shieldManager.General = s_generalManager;
 
-            s_tooltipManager.generalManager = s_generalManager;
+            s_tooltipManager.General = s_generalManager;
 
             s_loadingManager.General = s_generalManager;
         }
