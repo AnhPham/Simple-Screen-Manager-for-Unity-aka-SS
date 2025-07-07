@@ -221,9 +221,7 @@ namespace SS.UI
             {
                 var topScreen = GetTopScreen();
 
-                // Normally, OnScreenDestroy is called from the OnDestroy method of Screen.
-                // However, in this case, we call it right before Destroy to ensure it is removed from the list immediately, without waiting for OnDestroy.
-                // This prevents potential issues where other AddScreen is called right afterward.
+                // Remove from the list, handle underlying objects before destroying it
                 OnScreenDestroy(topScreen);
 
                 DestroyScreenInternal(topScreen);
@@ -234,6 +232,9 @@ namespace SS.UI
         {
             if (screen != null && screen.gameObject != null)
             {
+                // Remove from the list, handle underlying objects before destroying it
+                OnScreenDestroy(screen);
+
                 DestroyScreenInternal(screen);
             }
         }
@@ -342,12 +343,12 @@ namespace SS.UI
         {
             if (hasShield)
             {
-                // Remove from list and the current shield will not be destroyed
+                // Remove from the list and the current shield will not be destroyed
                 RemoveScreenFromListInternal(topScreen);
             }
             else
             {
-                // Remove from list and destroy the current shield
+                // Remove from the list and destroy the current shield
                 OnScreenDestroy(topScreen);
             }
 
