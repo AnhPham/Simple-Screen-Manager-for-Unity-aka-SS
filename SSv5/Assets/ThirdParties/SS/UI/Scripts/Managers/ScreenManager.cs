@@ -299,7 +299,7 @@ namespace SS.UI
                     {
                         if (destroyTopScreen)
                         {
-                            HandleDestroyTopScreen(topScreen);
+                            HandleDestroyTopScreen(topScreen, hasShield);
                         }
                         else
                         {
@@ -338,10 +338,18 @@ namespace SS.UI
             return false;
         }
 
-        protected virtual void HandleDestroyTopScreen(Component topScreen)
+        protected virtual void HandleDestroyTopScreen(Component topScreen, bool hasShield)
         {
-            // Remove from list before destroying will not triggered OnScreenDestroy
-            RemoveScreenFromListInternal(topScreen);
+            if (hasShield)
+            {
+                // Remove from list and the current shield will not be destroyed
+                RemoveScreenFromListInternal(topScreen);
+            }
+            else
+            {
+                // Remove from list and destroy the current shield
+                OnScreenDestroy(topScreen);
+            }
 
             // Destroy it
             DestroyScreenInternal(topScreen);
