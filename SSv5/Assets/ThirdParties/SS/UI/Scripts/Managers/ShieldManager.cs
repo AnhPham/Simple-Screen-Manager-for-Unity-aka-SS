@@ -136,7 +136,7 @@ namespace SS.UI
         #region Protected Functions
         protected virtual void OnShieldTap()
         {
-            ScreenManager.CloseScreen();
+            ScreenManager.Close();
         }
 
         protected virtual void UpdateShieldColor(ShieldController shield)

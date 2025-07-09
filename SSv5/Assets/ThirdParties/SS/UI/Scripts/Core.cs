@@ -262,7 +262,7 @@ namespace SS.UI
         {
             if (_screenManager != null)
             {
-                _screenManager.CloseScreen(onScreenClosed, hideAnimation);
+                _screenManager.Close(onScreenClosed, hideAnimation);
             }
         }
 
@@ -292,7 +292,7 @@ namespace SS.UI
         {
             if (_screenManager != null)
             {
-                _screenManager.CloseScreen(screen, onScreenClosed, hideAnimation);
+                _screenManager.Close(screen, onScreenClosed, hideAnimation);
             }
         }
 

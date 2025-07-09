@@ -127,7 +127,7 @@ namespace SS.UI
             {
                 Component topScreen = GetTopScreen();
                 if (TryHandleKeyBack(topScreen)) return;
-                CloseScreen();
+                Close();
             }
         }
 
@@ -152,7 +152,7 @@ namespace SS.UI
         #endregion
 
         #region Close & Destroy
-        public virtual void CloseScreen(OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
+        public virtual void Close(OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
         {
             if (IsAnyScreenActive())
             {
@@ -160,7 +160,7 @@ namespace SS.UI
 
                 if (topScreen != null)
                 {
-                    CloseScreen(topScreen, onScreenClosed, hideAnimation);
+                    Close(topScreen, onScreenClosed, hideAnimation);
                 }
             }
 
@@ -184,10 +184,13 @@ namespace SS.UI
             }
         }
 
-        public virtual void CloseScreen(Component screen, OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
+        public virtual void Close(Component screen, OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
         {
             if (IsAnyScreenActive())
             {
+                // Remove from the list, handle underlying objects before destroying it
+                OnScreenClosed(screen);
+
                 hideAnimation = (hideAnimation != null) ? hideAnimation : screen.GetComponent<ScreenController>().HideAnimation;
                 PlayAnimation(screen, hideAnimation, 0, true, () => { onScreenClosed?.Invoke(); });
             }
@@ -222,7 +225,7 @@ namespace SS.UI
                 var topScreen = GetTopScreen();
 
                 // Remove from the list, handle underlying objects before destroying it
-                OnScreenDestroy(topScreen);
+                OnScreenClosed(topScreen);
 
                 DestroyScreenInternal(topScreen);
             }
@@ -233,7 +236,7 @@ namespace SS.UI
             if (screen != null && screen.gameObject != null)
             {
                 // Remove from the list, handle underlying objects before destroying it
-                OnScreenDestroy(screen);
+                OnScreenClosed(screen);
 
                 DestroyScreenInternal(screen);
             }
@@ -349,7 +352,7 @@ namespace SS.UI
             else
             {
                 // Remove from the list and destroy the current shield
-                OnScreenDestroy(topScreen);
+                OnScreenClosed(topScreen);
             }
 
             // Destroy it
@@ -456,7 +459,7 @@ namespace SS.UI
         #endregion
 
         #region On Screen Destroy
-        public virtual void OnScreenDestroy(Component screen)
+        public virtual void OnScreenClosed(Component screen)
         {
             // Only reveal underlying objects if the screen is in the screen list.
             // In ClearAllScreens function, we remove screens from the screen list first, then destroy them, then this reveal function will not be called. 
