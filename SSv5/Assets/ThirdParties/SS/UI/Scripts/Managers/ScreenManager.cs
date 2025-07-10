@@ -281,6 +281,9 @@ namespace SS.UI
             // Update loading screen count
             _loadingScreens++;
 
+            // Show transparent top shield
+            ShieldManager.TransparentTopShield.SetActive(true);
+
             // Create Shield if no any screen active
             if (!IsAnyScreenActive() && hasShield)
             {
@@ -428,13 +431,13 @@ namespace SS.UI
                     }
                 }
 
+                // Update the loading count
+                OnScreenLoadEnd();
+
                 // Move this screen to the highest position, play its show animation.
                 screen.transform.SetAsLastSibling();
                 screen.gameObject.SetActive(true);
-                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);
-
-                // Update the loading count
-                _loadingScreens--;
+                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);;
 
                 // Move this screen to top in the screen list
                 _screenList.RemoveAt(index);
@@ -474,6 +477,16 @@ namespace SS.UI
             CreateScreen<T>(prefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
             HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield);
 #endif
+        }
+
+        protected virtual void OnScreenLoadEnd()
+        {
+            _loadingScreens--;
+
+            if (_loadingScreens <= 0)
+            {
+                ShieldManager.TransparentTopShield.SetActive(false);
+            }
         }
         #endregion
 
@@ -582,10 +595,10 @@ namespace SS.UI
             controller.HasShield = hasShield;
             controller.Manager = this;
 
+            AddScreenToList(screen);
+
             AddAnimations(screen, animationObjectName, showAnimation, hideAnimation);
             PlayAnimation(screen, showAnimation, 4);
-
-            AddScreenToList(screen);
 
             onScreenLoad?.Invoke(screen);
 
@@ -823,7 +836,7 @@ namespace SS.UI
         #region Screen List Operations
         protected virtual void AddScreenToList(Component screen)
         {
-            _loadingScreens--;
+            OnScreenLoadEnd();
 
             _screenList.Add(screen);
             _screenshieldList.Add(screen.gameObject);
