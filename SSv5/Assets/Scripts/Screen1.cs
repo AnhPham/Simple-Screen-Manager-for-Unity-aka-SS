@@ -47,7 +47,7 @@ public class Screen1 : MonoBehaviour, IKeyBack
 
     public void OnAddScreen3AndDestroyMeButtonTap()
     {
-        Core.Add<Screen3>(screenName: "Screen3", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
+        Core.Add<Screen3>(screenName: "Screen3", onScreenLoad: (screen) => {
             screen.Label.text = "Screen3";
         }, destroyTopScreen: true);
     }
@@ -56,7 +56,7 @@ public class Screen1 : MonoBehaviour, IKeyBack
     {
         Core.Destroy();
 
-        Core.Add<Screen3>(screenName: "Screen3", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
+        Core.Add<Screen3>(screenName: "Screen3", onScreenLoad: (screen) => {
             screen.Label.text = "Screen3";
         });
     }
