@@ -169,6 +169,10 @@ namespace SS.UI
                 // Loading done, 100%
                 AsyncOperationProgress = 1f;
 
+                // Free memory
+                Resources.UnloadUnusedAssets();
+                System.GC.Collect();
+
                 if (isDefaultLoading)
                 {
                     // For default loading, fade out the shield

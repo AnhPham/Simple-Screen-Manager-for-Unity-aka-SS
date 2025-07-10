@@ -27,7 +27,9 @@ namespace SS.UI
 
             if (Manager != null)
             {
-                Manager.OnScreenDestroy(Screen);
+                // Normally, this method will be called only once right after Core.Close or Core.Destroy.
+                // But this is for the case where the screen is destroyed using Object.Destroy
+                Manager.OnScreenClosed(Screen);
             }
         }
         #endregion

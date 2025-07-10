@@ -9,6 +9,6 @@ public class ScreenTemplateController : MonoBehaviour, IKeyBack
 
     public void OnKeyBack()
     {
-        ScreenManager.Close();
+        Core.Close();
     }
 }

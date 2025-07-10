@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace SS.IO
 {
-	public class File
-	{
+    public class File
+    {
         public static string Copy(string sourceFileName, string targetRelativePath, bool replaceExistFile = true)
-		{
+        {
             string targetFullPath = System.IO.Path.Combine(Application.dataPath, targetRelativePath);
 
             string directoryPath = System.IO.Path.GetDirectoryName(targetFullPath);
@@ -22,26 +22,26 @@ namespace SS.IO
                 return null;
             }
 
-			if (!System.IO.Directory.Exists(directoryPath))
-			{
-				System.IO.Directory.CreateDirectory(directoryPath);
-			}
+            if (!System.IO.Directory.Exists(directoryPath))
+            {
+                System.IO.Directory.CreateDirectory(directoryPath);
+            }
 
-			if (System.IO.File.Exists(targetFullPath))
-			{
-				if (replaceExistFile)
-				{
-					System.IO.File.Delete(targetFullPath);
-				}
-			}
+            if (System.IO.File.Exists(targetFullPath))
+            {
+                if (replaceExistFile)
+                {
+                    System.IO.File.Delete(targetFullPath);
+                }
+            }
 
-			if (!System.IO.File.Exists(targetFullPath))
-			{
-				UnityEditor.FileUtil.CopyFileOrDirectory(templatePath, targetFullPath);
-			}
+            if (!System.IO.File.Exists(targetFullPath))
+            {
+                UnityEditor.FileUtil.CopyFileOrDirectory(templatePath, targetFullPath);
+            }
 
             return targetFullPath;
-		}
+        }
 
         public static void ReplaceFileContent(string fullPath, string oldString, string newString)
         {
@@ -49,5 +49,5 @@ namespace SS.IO
             fileContents = fileContents.Replace(oldString, newString);
             System.IO.File.WriteAllText(fullPath, fileContents);
         }
-	}
+    }
 }

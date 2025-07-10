@@ -12,6 +12,6 @@ public class Screen3 : MonoBehaviour, IKeyBack
 
     public void OnKeyBack()
     {
-        Core.Close(hideAnimation: ScreenAnimation.RightHide);
+        Core.Close(hideAnimation: ScreenAnimation.FadeHide);
     }
 }
