@@ -102,6 +102,7 @@ namespace SS.UI
         protected bool IsScreen(Transform t) => t.GetComponent<ScreenController>() != null;
         protected bool IsShield(Transform t) => t.GetComponent<ShieldController>() != null;
         protected Component GetTopScreen() => _screenList[_screenList.Count - 1];
+        protected Component Get2ndScreen() => _screenList[_screenList.Count - 2];
         #endregion
 
         #region Unity Cycle
@@ -283,9 +284,6 @@ namespace SS.UI
                 CreateShield(true);
             }
 
-            // Set fromScreen is the last loaded scene name (then will set it again after check the top screen)
-            var fromScreen = SceneManager.LastLoadedSceneName;
-
             // Try find existing screen
             var hasExistingScreen = false; T existingScreen = null; int existingScreenIndex = 0;
             if (useExistingScreen)
@@ -293,25 +291,21 @@ namespace SS.UI
                 hasExistingScreen = TryFindExistingScreen<T>(out existingScreen, out existingScreenIndex);
             }
 
-            // Handle for destroyTopScreen, hideTopScreen, hasShield
+            // Set fromScreen
+            var fromScreen = SceneManager.LastLoadedSceneName;
             if (IsAnyScreenActive())
             {
-                if (!useExistingScreen || !hasExistingScreen)
+                var topScreen = GetTopScreen();
+                if (topScreen != null)
                 {
-                    var topScreen = GetTopScreen();
-                    if (topScreen != null)
+                    // Handle hideTopScreen
+                    if (!hasExistingScreen && !destroyTopScreen)
                     {
-                        if (destroyTopScreen)
-                        {
-                            HandleDestroyTopScreen(topScreen, hasShield);
-                        }
-                        else
-                        {
-                            HandleHideTopScreen(topScreen, hasShield, hideTopScreen);
-                        }
-                        // Set fromScreen is the top screen name
-                        fromScreen = topScreen.name;
+                        HandleHideTopScreen(topScreen, hasShield, hideTopScreen);
                     }
+
+                    // Set fromScreen
+                    fromScreen = topScreen.name;
                 }
             }
 
@@ -322,7 +316,7 @@ namespace SS.UI
             }
             else
             {
-                HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually);
+                HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually, destroyTopScreen);
             }
         }
 
@@ -340,6 +334,20 @@ namespace SS.UI
             existingScreen = null;
             index = -1;
             return false;
+        }
+
+        protected virtual void HandleOnScreenLoaded(string screenName, string fromScreen, bool manually, bool destroyTopScreen, bool hasShield)
+        {
+            // Invoke OnScreenLoaded
+            OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+
+            // Handle the 2nd screen
+            if (destroyTopScreen && _screenList.Count > 1)
+            {
+                var screen = Get2ndScreen();
+
+                HandleDestroyTopScreen(screen, hasShield);
+            }
         }
 
         protected virtual void HandleDestroyTopScreen(Component topScreen, bool hasShield)
@@ -434,12 +442,12 @@ namespace SS.UI
                     _pendingScreens--;
                 }
 
-                // Send OnScreenAdded event
+                // Send OnScreenAdded event (do not need to HandleOnScreenLoaded)
                 OnScreenAdded?.Invoke(screenName, fromScreen, manually);
             }
         }
 
-        protected virtual void HandleNewScreen<T>(string fromScreen, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true) where T : Component
+        protected virtual void HandleNewScreen<T>(string fromScreen, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, bool destroyTopScreen = false) where T : Component
         {
 #if ADDRESSABLE
             var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
@@ -447,13 +455,13 @@ namespace SS.UI
                 if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
                 {
                     CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
-                    OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+                    HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield);
                 }
             });
 #else
             var prefab = Resources.Load<GameObject>(Path.Combine(_screenPath, screenName));
             CreateScreen<T>(prefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield);
-            OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+            HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield);
 #endif
         }
         #endregion
