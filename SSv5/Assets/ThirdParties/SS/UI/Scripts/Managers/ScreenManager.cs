@@ -437,7 +437,7 @@ namespace SS.UI
                 // Move this screen to the highest position, play its show animation.
                 screen.transform.SetAsLastSibling();
                 screen.gameObject.SetActive(true);
-                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);;
+                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);
 
                 // Move this screen to top in the screen list
                 _screenList.RemoveAt(index);
@@ -771,11 +771,14 @@ namespace SS.UI
                     yield return 0;
                 }
 
-                // Play animation
-                unscaledAnim.Play(animationName, speed: AnimationSpeed);
+                if (unscaledAnim != null)
+                {
+                    // Play animation
+                    unscaledAnim.Play(animationName, speed: AnimationSpeed);
 
-                // Wait animation end
-                yield return new WaitForSecondsRealtime(anim[animationName].length / AnimationSpeed);
+                    // Wait animation end
+                    yield return new WaitForSecondsRealtime(anim[animationName].length / AnimationSpeed);
+                }
 
                 // Turn off transparent top shield after animation end
                 ShieldManager.TransparentTopShield.SetActive(false);
