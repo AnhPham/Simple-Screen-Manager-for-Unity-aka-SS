@@ -771,11 +771,14 @@ namespace SS.UI
                     yield return 0;
                 }
 
-                // Play animation
-                unscaledAnim.Play(animationName, speed: AnimationSpeed);
+                if (unscaledAnim != null)
+                {
+                    // Play animation
+                    unscaledAnim.Play(animationName, speed: AnimationSpeed);
 
-                // Wait animation end
-                yield return new WaitForSecondsRealtime(anim[animationName].length / AnimationSpeed);
+                    // Wait animation end
+                    yield return new WaitForSecondsRealtime(anim[animationName].length / AnimationSpeed);
+                }
 
                 // Turn off transparent top shield after animation end
                 ShieldManager.TransparentTopShield.SetActive(false);

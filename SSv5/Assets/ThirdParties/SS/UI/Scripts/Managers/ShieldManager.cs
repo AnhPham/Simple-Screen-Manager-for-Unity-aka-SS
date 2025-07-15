@@ -62,7 +62,7 @@ namespace SS.UI
 
         public virtual ShieldController CreateShield(bool showAfterCreate = false)
         {
-            var shield = Instantiate(Resources.Load<GameObject>("Prefabs/Shield"), ScreenContainer).GetComponent<ShieldController>();
+            var shield = Instantiate(Resources.Load<GameObject>(ShieldPrefabPath()), ScreenContainer).GetComponent<ShieldController>();
             shield.name = "Screen Shield";
             shield.transform.SetAsLastSibling();
             shield.gameObject.SetActive(false);
@@ -179,6 +179,11 @@ namespace SS.UI
             shield.SetActive(false);
 
             return shield;
+        }
+
+        protected virtual string ShieldPrefabPath()
+        {
+            return "Prefabs/Shield";
         }
         #endregion
     }
