@@ -437,7 +437,7 @@ namespace SS.UI
                 // Move this screen to the highest position, play its show animation.
                 screen.transform.SetAsLastSibling();
                 screen.gameObject.SetActive(true);
-                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);
+                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);;
 
                 // Move this screen to top in the screen list
                 _screenList.RemoveAt(index);
