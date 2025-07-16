@@ -437,7 +437,7 @@ namespace SS.UI
                 // Move this screen to the highest position, play its show animation.
                 screen.transform.SetAsLastSibling();
                 screen.gameObject.SetActive(true);
-                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, 4);;
+                PlayAnimation(screen, screen.GetComponent<ScreenController>().ShowAnimation, FramesDelayBeforeShowAnimation());
 
                 // Move this screen to top in the screen list
                 _screenList.RemoveAt(index);
@@ -598,7 +598,7 @@ namespace SS.UI
             AddScreenToList(screen);
 
             AddAnimations(screen, animationObjectName, showAnimation, hideAnimation);
-            PlayAnimation(screen, showAnimation, 4);
+            PlayAnimation(screen, showAnimation, FramesDelayBeforeShowAnimation());
 
             onScreenLoad?.Invoke(screen);
 
@@ -792,6 +792,11 @@ namespace SS.UI
             onAnimationEnd?.Invoke();
 
             _animatingScreens--;
+        }
+
+        protected virtual int FramesDelayBeforeShowAnimation()
+        {
+            return 4;
         }
         #endregion
 

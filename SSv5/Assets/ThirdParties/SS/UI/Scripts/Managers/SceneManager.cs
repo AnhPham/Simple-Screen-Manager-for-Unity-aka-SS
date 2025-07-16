@@ -173,6 +173,13 @@ namespace SS.UI
                 Resources.UnloadUnusedAssets();
                 System.GC.Collect();
 
+                // Wait before hide loading
+                var delay = TimeBeforeHideLoading(sceneName);
+                if (delay > 0)
+                {
+                    yield return new WaitForSecondsRealtime(delay);
+                }
+
                 if (isDefaultLoading)
                 {
                     // For default loading, fade out the shield
@@ -316,6 +323,11 @@ namespace SS.UI
             screen.transform.localPosition = Vector3.zero;
             screen.transform.localScale = Vector3.one;
             screen.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+        }
+
+        protected virtual float TimeBeforeHideLoading(string sceneName)
+        {
+            return 0;
         }
         #endregion
     }
