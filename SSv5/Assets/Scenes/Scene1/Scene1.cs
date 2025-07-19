@@ -46,7 +46,7 @@ public class Scene1 : MonoBehaviour
         {
             case "Default":
                 ScreenAnimationType = "Custom";
-                Core.Set(sceneLoadingName: "SceneLoading", loadingName: "Loading", tooltipName: "Tooltip", screenAnimationPath: "Custom/Animations");
+                Core.Set(sceneLoadingName: "SceneLoading", loadingName: "Loading", tooltipName: "Tooltip", screenAnimationPath: "Custom/Animations", closeOnTappingShield: true);
                 break;
 
             case "Custom":

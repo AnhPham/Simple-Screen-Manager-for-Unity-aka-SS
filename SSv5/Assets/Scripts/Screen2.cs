@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using SS.UI;
 
-public class Screen2 : MonoBehaviour, IKeyBack
+public class Screen2 : MonoBehaviour, IKeyBack, IShieldBehavior
 {
     [SerializeField] Text _label;
     public Text Label => _label;
@@ -62,5 +62,21 @@ public class Screen2 : MonoBehaviour, IKeyBack
         yield return new WaitForSecondsRealtime(1);
 
         Core.Loading(false);
+    }
+
+    public void OnShieldTap()
+    {
+    }
+
+    public void OnShieldHold()
+    {
+        GetComponent<CanvasGroup>().alpha = 0;
+        Core.HideShield();
+    }
+
+    public void OnShieldRelease()
+    {
+        GetComponent<CanvasGroup>().alpha = 1;
+        Core.ShowShield();
     }
 }

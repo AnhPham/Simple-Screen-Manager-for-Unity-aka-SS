@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace SS.UI
 {
@@ -29,6 +30,7 @@ namespace SS.UI
         public GameObject TransparentTopShield => _transparentTopShield;
         public ScreenManager ScreenManager { get => _screenManager; set => _screenManager = value; }
         public GeneralManager GeneralManager { get => _generalManager; set => _generalManager = value; }
+        public ShieldController GetTopShield => _shieldList.Count > 0 ? _shieldList[_shieldList.Count - 1] : null;
         #endregion
 
         #region Protected Properties
@@ -68,7 +70,6 @@ namespace SS.UI
             shield.gameObject.SetActive(false);
 
             UpdateShieldColor(shield);
-            AddShieldTapEvent(shield);
             _shieldList.Add(shield);
 
             if (showAfterCreate)
@@ -154,18 +155,90 @@ namespace SS.UI
             }
         }
 
-        protected virtual void AddShieldTapEvent(ShieldController shield)
+        public virtual void UpdateShieldEvents(ShieldController shield, GameObject screen)
         {
-            if (_closeOnTappingShield)
+            if (shield == null)
+                return;
+
+            if (screen == null)
+                return;
+
+            // Get or Add EventTrigger
+            var eventTrigger = shield.gameObject.GetComponent<EventTrigger>();
+            if (eventTrigger == null)
             {
-                var eventTrigger = shield.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
-
-                UnityEngine.EventSystems.EventTrigger.Entry entry = new UnityEngine.EventSystems.EventTrigger.Entry();
-                entry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerClick;
-                entry.callback.AddListener((eventData) => { OnShieldTap(); });
-
-                eventTrigger.triggers.Add(entry);
+                eventTrigger = shield.gameObject.AddComponent<EventTrigger>();
             }
+
+            // Clear
+            eventTrigger.triggers.Clear();
+
+            screen.TryGetComponent(out IShieldBehavior shieldBehavior);
+
+            if (shieldBehavior != null)
+            {
+                var tap = CreateShieldTapEntry(shieldBehavior);
+                eventTrigger.triggers.Add(tap);
+
+                var hold = CreateShieldHoldEntry(shieldBehavior);
+                eventTrigger.triggers.Add(hold);
+
+                var release = CreateShieldReleaseEntry(shieldBehavior);
+                eventTrigger.triggers.Add(release);
+            }
+            else
+            {
+                if (_closeOnTappingShield)
+                {
+                    var tap = CreateShieldTapEntry();
+                    eventTrigger.triggers.Add(tap);
+                }
+            }
+        }
+
+        protected virtual EventTrigger.Entry CreateShieldTapEntry()
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerClick;
+            entry.callback.AddListener((eventData) => { OnShieldTap(); });
+
+            return entry;
+        }
+
+        protected virtual EventTrigger.Entry CreateShieldTapEntry(IShieldBehavior shieldBehavior)
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerClick;
+            entry.callback.AddListener((eventData) => { shieldBehavior.OnShieldTap(); });
+
+            return entry;
+        }
+
+        protected virtual EventTrigger.Entry CreateShieldHoldEntry(IShieldBehavior shieldBehavior)
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerDown;
+            entry.callback.AddListener((eventData) => { shieldBehavior.OnShieldHold (); });
+
+            return entry;
+        }
+
+        protected virtual EventTrigger.Entry CreateShieldReleaseEntry(IShieldBehavior shieldBehavior)
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerUp;
+            entry.callback.AddListener((eventData) => { shieldBehavior.OnShieldRelease(); });
+
+            return entry;
+        }
+
+        protected virtual EventTrigger.Entry CreateShieldHoldEntry()
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerDown;
+            entry.callback.AddListener((eventData) => { OnShieldTap(); });
+
+            return entry;
         }
 
         protected virtual GameObject CreateTransparentTopShield()
