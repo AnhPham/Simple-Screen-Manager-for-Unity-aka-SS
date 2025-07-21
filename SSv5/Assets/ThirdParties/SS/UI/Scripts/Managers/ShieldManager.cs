@@ -173,16 +173,20 @@ namespace SS.UI
             // Clear
             eventTrigger.triggers.Clear();
 
+            // Find IShieldBehavior
             screen.TryGetComponent(out IShieldBehavior shieldBehavior);
 
             if (shieldBehavior != null)
             {
+                // Tap
                 var tap = CreateShieldTapEntry(shieldBehavior);
                 eventTrigger.triggers.Add(tap);
 
+                // Hold
                 var hold = CreateShieldHoldEntry(shieldBehavior);
                 eventTrigger.triggers.Add(hold);
 
+                // Release
                 var release = CreateShieldReleaseEntry(shieldBehavior);
                 eventTrigger.triggers.Add(release);
             }
@@ -190,7 +194,13 @@ namespace SS.UI
             {
                 if (_closeOnTappingShield)
                 {
-                    var tap = CreateShieldTapEntry();
+                    // Find IKeyBack
+                    screen.TryGetComponent(out IKeyBack keyBack);
+
+                    // Priority OnKeyBack if found IKeyBack
+                    var tap = keyBack != null ? CreateShieldTapEntry(keyBack) : CreateShieldTapEntry();
+
+                    // Add trigger
                     eventTrigger.triggers.Add(tap);
                 }
             }
@@ -201,6 +211,15 @@ namespace SS.UI
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerClick;
             entry.callback.AddListener((eventData) => { OnShieldTap(); });
+
+            return entry;
+        }
+
+        protected virtual EventTrigger.Entry CreateShieldTapEntry(IKeyBack keyBack)
+        {
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerClick;
+            entry.callback.AddListener((eventData) => { keyBack.OnKeyBack(); });
 
             return entry;
         }
