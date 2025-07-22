@@ -132,6 +132,17 @@ namespace SS.UI
 
             _shieldList.Clear();
         }
+
+        public virtual void MoveShieldToTop(ShieldController shield)
+        {
+            if (shield != null && _shieldList.Contains(shield))
+            {
+                shield.transform.SetAsLastSibling();
+
+                _shieldList.Remove(shield);
+                _shieldList.Add(shield);
+            }
+        }
         #endregion
 
         #region Protected Functions

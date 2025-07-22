@@ -431,22 +431,29 @@ namespace SS.UI
                     }
 
                     // If underlying object is a shield
-                    if (IsShield(underlying))
+                    var shield = underlying.GetComponent<ShieldController>();
+                    if (shield != null)
                     {
                         // If no overlying object or it also is a shield
                         if (overlying == null || IsShield(overlying))
                         {
                             // Move the underlying shield to the highest position
-                            underlying.transform.SetAsLastSibling();
-                            _screenshieldList.Remove(underlying.gameObject);
-                            _screenshieldList.Add(underlying.gameObject);
+                            ShieldManager.MoveShieldToTop(shield);
+
+                            // Move shield to the top of _screenshieldList
+                            _screenshieldList.Remove(shield.gameObject);
+                            _screenshieldList.Add(shield.gameObject);
                         }
                         else
                         {
-                            // If overlying object is a screen and it is the current top, deactivate it
+                            // If overlying object is a screen and it is the current top
                             if (screenChildIndex + 2 >= _screenshieldList.Count)
                             {
+                                // Deactivate it
                                 overlying.gameObject.SetActive(false);
+
+                                // Update events and color of the shield
+                                ShieldManager.UpdateShield(shield, screen.gameObject);
                             }
                         }
                     }
