@@ -42,7 +42,7 @@ public class Screen1 : MonoBehaviour, IKeyBack, IShieldBehavior
     {
         Core.Add<Screen2>(screenName: "Screen2", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
             screen.Label.text = "Screen2";
-        }, hideTopScreen: false);
+        }, hideTopScreen: false, shieldAlpha: 0.9f);
     }
 
     public void OnAddScreen3AndDestroyMeButtonTap()

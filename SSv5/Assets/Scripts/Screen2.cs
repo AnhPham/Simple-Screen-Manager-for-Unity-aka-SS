@@ -70,13 +70,22 @@ public class Screen2 : MonoBehaviour, IKeyBack, IShieldBehavior
 
     public void OnShieldHold()
     {
-        GetComponent<CanvasGroup>().alpha = 0;
+        SetAllScreensAlpha(0);
         Core.HideShield();
     }
 
     public void OnShieldRelease()
     {
-        GetComponent<CanvasGroup>().alpha = 1;
+        SetAllScreensAlpha(1);
         Core.ShowShield();
+    }
+
+    private void SetAllScreensAlpha(float alpha)
+    {
+        var screens = FindObjectsOfType<ScreenController>();
+        for (int i = 0; i < screens.Length; i++)
+        {
+            screens[i].GetComponent<CanvasGroup>().alpha = alpha;
+        }
     }
 }
