@@ -128,6 +128,7 @@ Make sure the addressable name is the same as the screen name, not a path to the
 ```cs
 public enum ScreenAnimation
 {
+    None,       // No animation
     BottomHide, // The screen slides from the center to the bottom when hiding.
     BottomShow, // The screen slides from the bottom to the center when showing.
     FadeHide,   // The screen fades out when hiding.
@@ -443,6 +444,47 @@ Indicate whether close the top screen when users tap the shield. By default, clo
 Core.Set(closeOnTappingShield: true);
 ```
 
+<h4>5.5. IShieldBehavior </h4>
+
+Implement the IShieldBehavior interface to control OnShieldTap, OnShieldHold, OnShieldRelease.
+
+```cs
+public class Screen1Controller : MonoBehaviour, IShieldBehavior
+{
+    public void OnShieldTap()
+    {
+        Core.Close();
+    }
+
+    public void OnShieldHold()
+    {
+        Core.HideShield();
+        GetComponent<CanvasGroup>().alpha = 0;
+    }
+
+    public void OnShieldRelease()
+    {
+        Core.ShowShield();
+        GetComponent<CanvasGroup>().alpha = 1;
+    }
+}
+```
+
+If screen does not implement IShieldBehavior and closeOnTappingShield is true, the system will check if it implements IKeyBack.
+- If yes, call OnKeyBack() when user tap the shield.
+- If no, call Core.Close() when user tap the shield.
+
+```cs
+public class Screen1Controller : MonoBehaviour, IKeyBack
+{
+    public void OnKeyBack()
+    {
+        // Do something
+        Core.Close();
+    }
+}
+```
+
 <h3>6. Other parameters of adding a screen</h3>
 
 <h4>6.1. Use Existing Screen </h4>
@@ -504,6 +546,14 @@ If this parameter is false, the system will not hide the top screen when add oth
 
 ```cs
 Core.Add<Screen2Controller>(screenName: "Screen2", hideTopScreen: false);
+```
+
+<h4>6.4. Shield Alpha</h4>
+
+We can set alpha of shield when add a screen. By default it is -1, means use screenShieldColor (set by Core.Set) and do not change alpha.
+
+```cs
+Core.Add<Screen2Controller>(screenName: "Screen2", shieldAlpha: 0.9f);
 ```
 
 <h3>7. Loading</h3>
