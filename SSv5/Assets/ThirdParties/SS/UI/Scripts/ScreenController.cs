@@ -18,6 +18,7 @@ namespace SS.UI
         public bool HasShield { get; set; }
         public ScreenManager Manager { get; set; }
         public bool BeingDestroyed { get; protected set; }
+        public float ShieldAlpha { get; set; }
         #endregion
 
         #region Unity Cycle

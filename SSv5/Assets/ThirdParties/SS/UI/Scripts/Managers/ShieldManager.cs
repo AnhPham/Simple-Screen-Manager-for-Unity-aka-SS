@@ -62,14 +62,14 @@ namespace SS.UI
             _closeOnTappingShield = closeOnTappingShield;
         }
 
-        public virtual ShieldController CreateShield(bool showAfterCreate = false)
+        public virtual ShieldController CreateShield(bool showAfterCreate = false, float shieldAlpha = -1)
         {
             var shield = Instantiate(Resources.Load<GameObject>(ShieldPrefabPath()), ScreenContainer).GetComponent<ShieldController>();
             shield.name = "Screen Shield";
             shield.transform.SetAsLastSibling();
             shield.gameObject.SetActive(false);
 
-            UpdateShieldColor(shield);
+            UpdateShieldColor(shield, shieldAlpha);
             _shieldList.Add(shield);
 
             if (showAfterCreate)
@@ -135,15 +135,32 @@ namespace SS.UI
         #endregion
 
         #region Protected Functions
+        public virtual void UpdateShield(ShieldController shield, GameObject screen)
+        {
+            if (shield == null)
+                return;
+
+            if (screen == null)
+                return;
+
+            UpdateShieldEvents(shield, screen);
+
+            var screenController = screen.GetComponent<ScreenController>();
+            if (screenController != null)
+            {
+                UpdateShieldColor(shield, screenController.ShieldAlpha);
+            }
+        }
+
         protected virtual void OnShieldTap()
         {
             ScreenManager.Close();
         }
 
-        protected virtual void UpdateShieldColor(ShieldController shield)
+        protected virtual void UpdateShieldColor(ShieldController shield, float shieldAlpha = -1)
         {
             var image = shield.GetComponent<Image>();
-            image.color = _screenShieldColor;
+            image.color = shieldAlpha < 0 ? _screenShieldColor : new Color(_screenShieldColor.r, _screenShieldColor.g, _screenShieldColor.b, shieldAlpha);
         }
 
         protected virtual void ShowShield(ShieldController shield)
@@ -155,14 +172,8 @@ namespace SS.UI
             }
         }
 
-        public virtual void UpdateShieldEvents(ShieldController shield, GameObject screen)
+        protected virtual void UpdateShieldEvents(ShieldController shield, GameObject screen)
         {
-            if (shield == null)
-                return;
-
-            if (screen == null)
-                return;
-
             // Get or Add EventTrigger
             var eventTrigger = shield.gameObject.GetComponent<EventTrigger>();
             if (eventTrigger == null)
