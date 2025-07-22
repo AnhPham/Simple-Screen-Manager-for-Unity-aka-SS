@@ -39,6 +39,11 @@ namespace SS.UI
 
         public virtual void Play(string clip, OnAnimationEndDelegate onAnimationEnd = null, float speed = 1)
         {
+            if (_curState != null)
+            {
+                _curState.enabled = false;
+            }
+
             _accumTime = 0F;
             _curClipName = clip;
             _curState = Animation[clip];
