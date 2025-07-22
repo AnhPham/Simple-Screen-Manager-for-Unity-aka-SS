@@ -520,7 +520,7 @@ Core.Add<Screen1Controller>(screenName: "Screen1");
 
 <h4>6.2. Destroy Top Screen</h4>
 
-If this parameter is true, destroy the top screen before adding a screen
+If this parameter is true, destroy the top screen after adding a screen (right after OnScreenLoaded is called).
 
 ```cs
 Core.Add<Screen2Controller>(screenName: "Screen2", destroyTopScreen: true);
