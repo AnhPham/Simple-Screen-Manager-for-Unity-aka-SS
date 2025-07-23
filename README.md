@@ -258,7 +258,7 @@ Core.Close(() =>
 
 <h4>3.4. On Key Back </h4>
 
-If you create a screen by the Screen Generator, the screen controller will implement OnKeyBack of the IKeyBack interface by default. It means when players press the physics back button on Android (or ESC key on PC), the screen will be closed. If you don't want that, just remove IKeyBack in the script.
+If you create a screen by the Screen Generator, the screen controller will implement OnKeyBack of the IKeyBack interface by default. It means when players press the physics back button on Android (or ESC key on PC), the OnKeyBack() will be called. If you don't implement IKeyBack, Core.Close() will be called instead.
 
 ```cs
 public class Screen1Controller : MonoBehaviour, IKeyBack
