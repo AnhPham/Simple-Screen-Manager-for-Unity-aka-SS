@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.unity.addressables": {
-      "version": "1.21.21",
+      "version": "1.22.3",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -9,7 +9,7 @@
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.imageconversion": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
-        "com.unity.scriptablebuildpipeline": "1.21.23",
+        "com.unity.scriptablebuildpipeline": "1.21.25",
         "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -91,7 +91,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.scriptablebuildpipeline": {
-      "version": "1.21.23",
+      "version": "1.21.25",
       "depth": 1,
       "source": "registry",
       "dependencies": {},
