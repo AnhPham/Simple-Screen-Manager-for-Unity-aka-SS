@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using SS.UI;
 
-public class Screen1 : MonoBehaviour, IKeyBack
+public class Screen1 : MonoBehaviour, IKeyBack, IShieldBehavior
 {
     [SerializeField] Text _label;
     public Text Label => _label;
@@ -42,7 +42,7 @@ public class Screen1 : MonoBehaviour, IKeyBack
     {
         Core.Add<Screen2>(screenName: "Screen2", animationObjectName: "AnimationRoot", onScreenLoad: (screen) => {
             screen.Label.text = "Screen2";
-        }, hideTopScreen: false);
+        }, hideTopScreen: false, shieldAlpha: 0.9f);
     }
 
     public void OnAddScreen3AndDestroyMeButtonTap()
@@ -72,5 +72,18 @@ public class Screen1 : MonoBehaviour, IKeyBack
         {
             _pressedSpaceKey = true;
         }
+    }
+
+    public void OnShieldTap()
+    {
+        Core.Close();
+    }
+
+    public void OnShieldHold()
+    {
+    }
+
+    public void OnShieldRelease()
+    {
     }
 }

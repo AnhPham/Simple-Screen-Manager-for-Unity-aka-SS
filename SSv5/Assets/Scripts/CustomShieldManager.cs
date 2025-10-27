@@ -7,22 +7,40 @@ public class CustomShieldManager : ShieldManager
 {
     public override void HideShield(ShieldController shield)
     {
-        if (shield.gameObject.activeInHierarchy)
+        switch (Scene1.ScreenAnimationType)
         {
-            _shieldList.Remove(shield);
-            Destroy(shield.gameObject);
+            case "Default":
+                base.HideShield(shield);
+                break;
+
+            case "Custom":
+                if (shield.gameObject.activeInHierarchy)
+                {
+                    _shieldList.Remove(shield);
+                    Destroy(shield.gameObject);
+                }
+                break;
         }
     }
 
     protected override void ShowShield(ShieldController shield)
     {
-        if (!shield.gameObject.activeInHierarchy)
+        switch (Scene1.ScreenAnimationType)
         {
-            shield.gameObject.SetActive(true);
+            case "Default":
+                base.ShowShield(shield);
+                break;
 
-            var canvasGroup = shield.GetComponent<CanvasGroup>();
-            canvasGroup.alpha = 1;
-            canvasGroup.blocksRaycasts = true;
+            case "Custom":
+                if (!shield.gameObject.activeInHierarchy)
+                {
+                    shield.gameObject.SetActive(true);
+
+                    var canvasGroup = shield.GetComponent<CanvasGroup>();
+                    canvasGroup.alpha = 1;
+                    canvasGroup.blocksRaycasts = true;
+                }
+                break;
         }
     }
 }

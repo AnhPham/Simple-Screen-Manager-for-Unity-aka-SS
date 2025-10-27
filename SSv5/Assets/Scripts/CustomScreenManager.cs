@@ -7,10 +7,30 @@ public class CustomScreenManager : ScreenManager
 {
     public override void Close(Component screen, OnScreenClosedDelegate onScreenClosed = null, string hideAnimation = null)
     {
-        if (IsAnyScreenActive())
+        switch (Scene1.ScreenAnimationType)
         {
-            TryDestroyScreen(screen);
-            onScreenClosed?.Invoke();
+            case "Default":
+                base.Close(screen, onScreenClosed, hideAnimation);
+                break;
+
+            case "Custom":
+                if (IsAnyScreenActive())
+                {
+                    TryDestroyScreen(screen);
+                    onScreenClosed?.Invoke();
+                }
+                break;
         }
+    }
+
+    protected override int FramesDelayBeforeShowAnimation()
+    {
+        switch (Scene1.ScreenAnimationType)
+        {
+            case "Custom":
+                return 0;
+        }
+
+        return base.FramesDelayBeforeShowAnimation();
     }
 }
