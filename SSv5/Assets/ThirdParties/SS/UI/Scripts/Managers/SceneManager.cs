@@ -157,6 +157,30 @@ namespace SS.UI
                 LoadAsyncOperationScene(sceneName, mode, isDefaultLoading, onSceneLoaded);
 
                 // While loading
+#if ADDRESSABLE
+                if (isDefaultLoading)
+                {
+                    while (!IsAsyncOperationDone())
+                    {
+                        // For default loading, update the real progress each frame
+                        AsyncOperationProgress = GetAsyncOperationProgress();
+                        
+                        yield return null;
+                    }
+                }
+                else
+                {
+                    while (!IsAsyncOperationDone() || _loadingTime < _loadingMinDuration)
+                    {
+                        _loadingTime += Time.deltaTime;
+                        AsyncOperationProgress = _loadingTime / _loadingMinDuration < GetAsyncOperationProgress() ? _loadingTime / _loadingMinDuration : GetAsyncOperationProgress();
+
+                        yield return null;
+                    }
+
+                    yield return _asyncOperation.Result.ActivateAsync();
+                }
+#else
                 while (!IsAsyncOperationDone())
                 {
                     if (isDefaultLoading)
@@ -171,6 +195,7 @@ namespace SS.UI
                     }
                     yield return null;
                 }
+#endif
 
                 // Loading done, 100%
                 AsyncOperationProgress = 1f;
