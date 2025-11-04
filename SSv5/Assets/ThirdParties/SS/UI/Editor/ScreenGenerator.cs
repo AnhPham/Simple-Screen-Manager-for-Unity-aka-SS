@@ -54,7 +54,7 @@ namespace SS.UI
         void LoadPrefs()
         {
             screenDirectoryPath = EditorPrefs.GetString("SS_SCREEN_DIRECTORY_PATH", "Project/Screens/");
-            screenResourcePath = EditorPrefs.GetString("SS_SCREEN_RESOURCE_PATH", "Project/Resources/Screens/");
+            screenResourcePath = EditorPrefs.GetString("SS_SCREEN_RESOURCE_PATH", "Resources/Screens/");
             screenTemplateFile = EditorPrefs.GetString("SS_SCREEN_TEMPLATE_FILE", "ScreenTemplate.prefab");
             addScreenRefToResources = EditorPrefs.GetBool("SS_SCREEN_REF_RESOURCES", true);
         }

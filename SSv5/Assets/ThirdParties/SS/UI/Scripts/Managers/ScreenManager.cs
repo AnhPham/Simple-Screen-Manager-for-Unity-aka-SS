@@ -267,7 +267,7 @@ namespace SS.UI
             ScreenCoroutines.Clear();
         }
 
-        public virtual IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true, float shieldAlpha = -1) where T : Component
+        public virtual IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true, float shieldAlpha = -1, bool ignoreOnScreenAdded = false) where T : Component
         {
             // Wait until the addCondition() return true. This is a custom condition.
             while (addCondition != null && !addCondition()) yield return null;
@@ -321,11 +321,11 @@ namespace SS.UI
             // Handle existing/new screen
             if (hasExistingScreen)
             {
-                HandleExistingScreen(existingScreen, existingScreenIndex, onScreenLoad, screenName, fromScreen, manually);
+                HandleExistingScreen(existingScreen, existingScreenIndex, onScreenLoad, screenName, fromScreen, manually, ignoreOnScreenAdded);
             }
             else
             {
-                HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually, destroyTopScreen, shield, shieldAlpha);
+                HandleNewScreen(fromScreen, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, manually, destroyTopScreen, shield, shieldAlpha, ignoreOnScreenAdded);
             }
         }
 
@@ -345,13 +345,16 @@ namespace SS.UI
             return false;
         }
 
-        protected virtual void HandleOnScreenLoaded(string screenName, string fromScreen, bool manually, bool destroyTopScreen, bool hasShield, Component screen, ShieldController shield)
+        protected virtual void HandleOnScreenLoaded(string screenName, string fromScreen, bool manually, bool destroyTopScreen, bool hasShield, Component screen, ShieldController shield, bool ignoreOnScreenAdded)
         {
             // Shield
             var nearestShield = shield;
 
             // Invoke OnScreenLoaded
-            OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+            if (!ignoreOnScreenAdded)
+            {
+                OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+            }
 
             // Handle the 2nd screen
             if (destroyTopScreen && _screenList.Count > 1)
@@ -409,7 +412,7 @@ namespace SS.UI
             return ShieldManager.GetTopShield;
         }
 
-        protected virtual void HandleExistingScreen<T>(T screen, int index, OnScreenLoadDelegate<T> onScreenLoad, string screenName, string fromScreen, bool manually) where T : Component
+        protected virtual void HandleExistingScreen<T>(T screen, int index, OnScreenLoadDelegate<T> onScreenLoad, string screenName, string fromScreen, bool manually, bool ignoreOnScreenAdded) where T : Component
         {
             // Find Screen's child index
             var screenChildIndex = _screenshieldList.IndexOf(screen.gameObject);
@@ -485,11 +488,14 @@ namespace SS.UI
                 }
 
                 // Send OnScreenAdded event (do not need to HandleOnScreenLoaded)
-                OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+                if (!ignoreOnScreenAdded)
+                {
+                    OnScreenAdded?.Invoke(screenName, fromScreen, manually);
+                }
             }
         }
 
-        protected virtual void HandleNewScreen<T>(string fromScreen, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, bool destroyTopScreen = false, ShieldController shield = null, float shieldAlpha = -1) where T : Component
+        protected virtual void HandleNewScreen<T>(string fromScreen, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, bool destroyTopScreen = false, ShieldController shield = null, float shieldAlpha = -1, bool ignoreOnScreenAdded = false) where T : Component
         {
 #if ADDRESSABLE
             var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
@@ -497,13 +503,13 @@ namespace SS.UI
                 if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
                 {
                     var screen = CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, shieldAlpha);
-                    HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield);
+                    HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield, ignoreOnScreenAdded);
                 }
             });
 #else
             var screenRef = Resources.Load<ScreenReference>(Path.Combine(_screenPath, screenName));
             var screen = CreateScreen<T>(screenRef.ScreenPrefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, shieldAlpha);
-            HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield);
+            HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield, ignoreOnScreenAdded);
 #endif
         }
 
