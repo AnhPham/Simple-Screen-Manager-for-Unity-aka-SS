@@ -24,6 +24,7 @@ namespace SS.UI
         public string screenDirectoryPath;
         public string screenResourcePath;
         public string screenTemplateFile;
+        public bool addScreenRefToResources;
 
         string screenPath;
         string prefabPath;
@@ -55,6 +56,7 @@ namespace SS.UI
             screenDirectoryPath = EditorPrefs.GetString("SS_SCREEN_DIRECTORY_PATH", "Project/Screens/");
             screenResourcePath = EditorPrefs.GetString("SS_SCREEN_RESOURCE_PATH", "Project/Resources/Screens/");
             screenTemplateFile = EditorPrefs.GetString("SS_SCREEN_TEMPLATE_FILE", "ScreenTemplate.prefab");
+            addScreenRefToResources = EditorPrefs.GetBool("SS_SCREEN_REF_RESOURCES", true);
         }
 
         void SavePrefs()
@@ -62,6 +64,7 @@ namespace SS.UI
             EditorPrefs.SetString("SS_SCREEN_DIRECTORY_PATH", screenDirectoryPath);
             EditorPrefs.SetString("SS_SCREEN_RESOURCE_PATH", screenResourcePath);
             EditorPrefs.SetString("SS_SCREEN_TEMPLATE_FILE", screenTemplateFile);
+            EditorPrefs.SetBool("SS_SCREEN_REF_RESOURCES", addScreenRefToResources);
         }
 
         void OnGUI()
@@ -71,6 +74,7 @@ namespace SS.UI
             screenDirectoryPath = EditorGUILayout.TextField("Screen Directory Path", screenDirectoryPath);
             screenResourcePath = EditorGUILayout.TextField("Screen Resource Path", screenResourcePath);
             screenTemplateFile = EditorGUILayout.TextField("Screen Template File", screenTemplateFile);
+            addScreenRefToResources = EditorGUILayout.Toggle("Add screen ref to Resources", addScreenRefToResources);
 
             switch (state)
             {
@@ -100,8 +104,13 @@ namespace SS.UI
                     {
                         EditorUtility.ClearProgressBar();
                         SetupPrefab();
-                        CreateAsset();
-                        SetupAsset();
+
+                        if (addScreenRefToResources)
+                        {
+                            CreateAsset();
+                            SetupAsset();
+                        }
+                        
                         state = State.COMPILING_AGAIN;
                     }
                     break;
