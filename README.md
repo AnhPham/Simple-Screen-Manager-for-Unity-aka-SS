@@ -42,13 +42,7 @@ From Menu: SS / Screen Generator / Input Screen Name / Generate
   <img width="500px" src="/learn/unity/ss/screen-generator.gif?raw=true" alt="Demo">
 </p>
 
-<h3>3. Drag screen prefab to Resources/Screens folder</h3>In case of not using Addressables
-
-<p align="center">
-  <img width="500px" src="/learn/unity/ss/drag-screen.gif?raw=true" alt="Demo">
-</p>
-
-<h3>4. Add a screen on top with default animation</h3>
+<h3>3. Add a screen on top with default animation</h3>
 
 ```cs
 using SS.UI;
@@ -67,7 +61,7 @@ Core.Add<Screen1Controller>(screenName: "Screen1");
   <img width="500px" src="/learn/unity/ss/add-screen.gif?raw=true" alt="Demo">
 </p>
 
-<h3>5. Close a screen</h3>
+<h3>4. Close a screen</h3>
 
 ```cs
 Core.Close();
@@ -77,7 +71,7 @@ Core.Close();
   <img width="500px" src="/learn/unity/ss/close-screen.gif?raw=true" alt="Demo">
 </p>
 
-<h3>6. Load a scene with automatic fade</h3>
+<h3>5. Load a scene with automatic fade</h3>
 
 ```cs
 Core.Load<Scene1Controller>(sceneName: "Scene1");
