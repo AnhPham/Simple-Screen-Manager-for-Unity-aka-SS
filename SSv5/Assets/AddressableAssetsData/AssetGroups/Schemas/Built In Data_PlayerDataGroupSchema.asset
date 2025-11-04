@@ -9,7 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49251d8c981de486b957174c165887e5, type: 3}
-  m_Name: Screen2
+  m_Script: {fileID: 11500000, guid: b1487f5d688e4f94f828f879d599dbdc, type: 3}
+  m_Name: Built In Data_PlayerDataGroupSchema
   m_EditorClassIdentifier: 
-  _screenPrefab: {fileID: 3387652934893700365, guid: 66955e0c1ec10da4993fea6c12cb10d0, type: 3}
+  m_Group: {fileID: 11400000, guid: 292bc3efacbb7472884e972ed77e5ace, type: 2}
+  m_IncludeResourcesFolders: 1
+  m_IncludeBuildSettingsScenes: 1

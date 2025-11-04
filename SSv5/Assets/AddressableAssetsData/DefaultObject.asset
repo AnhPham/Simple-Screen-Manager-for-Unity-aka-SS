@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49251d8c981de486b957174c165887e5, type: 3}
-  m_Name: Tooltip
+  m_Script: {fileID: 11500000, guid: 3a189bb168d8d90478a09ea08c2f3d72, type: 3}
+  m_Name: DefaultObject
   m_EditorClassIdentifier: 
-  _screenPrefab: {fileID: 3387652934893700365, guid: be8923eece0d74185a9d0c35eee35a8a, type: 3}
+  m_AddressableAssetSettingsGuid: 251374f95952d42f9ae8ef9ddc8e27f5

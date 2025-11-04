@@ -9,7 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49251d8c981de486b957174c165887e5, type: 3}
-  m_Name: Loading
+  m_Script: {fileID: 11500000, guid: 5834b5087d578d24c926ce20cd31e6d6, type: 3}
+  m_Name: Default Local Group_ContentUpdateGroupSchema
   m_EditorClassIdentifier: 
-  _screenPrefab: {fileID: 3387652934893700365, guid: 2b9e87c5f28a4d9479da35ca2f3ae0fb, type: 3}
+  m_Group: {fileID: 11400000, guid: b1d2205b223974149af9c6ef2f611b78, type: 2}
+  m_StaticContent: 0
