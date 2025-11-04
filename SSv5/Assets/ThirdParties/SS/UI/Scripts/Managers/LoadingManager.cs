@@ -71,7 +71,7 @@ namespace SS.UI
                             }
                         });
 #else
-                        var prefab = Resources.Load<GameObject>(Path.Combine(_loadingPath, _loadingName));
+                        var prefab = Resources.Load<ScreenReference>(Path.Combine(_loadingPath, _loadingName)).ScreenPrefab;
                         CreateLoading(prefab);
                         ShowLoading(timeout);
 #endif

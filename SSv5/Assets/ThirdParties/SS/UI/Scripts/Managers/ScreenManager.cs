@@ -501,8 +501,8 @@ namespace SS.UI
                 }
             });
 #else
-            var prefab = Resources.Load<GameObject>(Path.Combine(_screenPath, screenName));
-            var screen = CreateScreen<T>(prefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, shieldAlpha);
+            var screenRef = Resources.Load<ScreenReference>(Path.Combine(_screenPath, screenName));
+            var screen = CreateScreen<T>(screenRef.ScreenPrefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, shieldAlpha);
             HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield);
 #endif
         }

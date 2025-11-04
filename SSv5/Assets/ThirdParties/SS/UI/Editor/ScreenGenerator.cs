@@ -20,12 +20,14 @@ namespace SS.UI
             COMPILING_AGAIN
         }
 
-        public string sceneName;
-        public string sceneDirectoryPath;
-        public string sceneTemplateFile;
+        public string screenName;
+        public string screenDirectoryPath;
+        public string screenResourcePath;
+        public string screenTemplateFile;
 
-        string scenePath;
+        string screenPath;
         string prefabPath;
+        string assetPath;
         string controllerPath;
         State state = State.IDLE;
 
@@ -45,27 +47,30 @@ namespace SS.UI
 
         void ResetParams()
         {
-            sceneName = string.Empty;
+            screenName = string.Empty;
         }
 
         void LoadPrefs()
         {
-            sceneDirectoryPath = EditorPrefs.GetString("SS_SCREEN_SCENE_DIRECTORY_PATH", "Project/Screens/");
-            sceneTemplateFile = EditorPrefs.GetString("SS_SCREEN_SCENE_TEMPLATE_FILE", "ScreenTemplate.prefab");
+            screenDirectoryPath = EditorPrefs.GetString("SS_SCREEN_DIRECTORY_PATH", "Project/Screens/");
+            screenResourcePath = EditorPrefs.GetString("SS_SCREEN_RESOURCE_PATH", "Project/Resources/Screens/");
+            screenTemplateFile = EditorPrefs.GetString("SS_SCREEN_TEMPLATE_FILE", "ScreenTemplate.prefab");
         }
 
         void SavePrefs()
         {
-            EditorPrefs.SetString("SS_SCREEN_SCENE_DIRECTORY_PATH", sceneDirectoryPath);
-            EditorPrefs.SetString("SS_SCREEN_SCENE_TEMPLATE_FILE", sceneTemplateFile);
+            EditorPrefs.SetString("SS_SCREEN_DIRECTORY_PATH", screenDirectoryPath);
+            EditorPrefs.SetString("SS_SCREEN_RESOURCE_PATH", screenResourcePath);
+            EditorPrefs.SetString("SS_SCREEN_TEMPLATE_FILE", screenTemplateFile);
         }
 
         void OnGUI()
         {
-            GUILayout.Label("Scene Generator", EditorStyles.boldLabel);
-            sceneName = EditorGUILayout.TextField("Screen Name", sceneName);
-            sceneDirectoryPath = EditorGUILayout.TextField("Screen Directory Path", sceneDirectoryPath);
-            sceneTemplateFile = EditorGUILayout.TextField("Screen Template File", sceneTemplateFile);
+            GUILayout.Label("Screen Generator", EditorStyles.boldLabel);
+            screenName = EditorGUILayout.TextField("Screen Name", screenName);
+            screenDirectoryPath = EditorGUILayout.TextField("Screen Directory Path", screenDirectoryPath);
+            screenResourcePath = EditorGUILayout.TextField("Screen Resource Path", screenResourcePath);
+            screenTemplateFile = EditorGUILayout.TextField("Screen Template File", screenTemplateFile);
 
             switch (state)
             {
@@ -95,6 +100,8 @@ namespace SS.UI
                     {
                         EditorUtility.ClearProgressBar();
                         SetupPrefab();
+                        CreateAsset();
+                        SetupAsset();
                         state = State.COMPILING_AGAIN;
                     }
                     break;
@@ -122,13 +129,13 @@ namespace SS.UI
 
         bool GenerateScene()
         {
-            if (string.IsNullOrEmpty(sceneName))
+            if (string.IsNullOrEmpty(screenName))
             {
                 Debug.LogWarning("You have to input an unique name to 'Screen Name'");
                 return false;
             }
 
-            string targetRelativePath = System.IO.Path.Combine(sceneDirectoryPath, sceneName + "/" + sceneName + ".unity");
+            string targetRelativePath = System.IO.Path.Combine(screenDirectoryPath, screenName + "/" + screenName + ".unity");
             string targetFullPath = SS.IO.Path.GetAbsolutePath(targetRelativePath);
 
             if (System.IO.File.Exists(targetFullPath))
@@ -137,7 +144,7 @@ namespace SS.UI
                 return false;
             }
 
-            if (string.IsNullOrEmpty(sceneTemplateFile))
+            if (string.IsNullOrEmpty(screenTemplateFile))
             {
                 Debug.LogWarning("You have to input screen template file!");
                 return false;
@@ -156,8 +163,8 @@ namespace SS.UI
 
         bool CreatePrefab()
         {
-            string targetRelativePath = System.IO.Path.Combine(sceneDirectoryPath, sceneName + "/" + sceneName + ".prefab");
-            string targetFullPath = SS.IO.File.Copy(sceneTemplateFile, targetRelativePath);
+            string targetRelativePath = System.IO.Path.Combine(screenDirectoryPath, screenName + "/" + screenName + ".prefab");
+            string targetFullPath = SS.IO.File.Copy(screenTemplateFile, targetRelativePath);
 
             if (targetFullPath == null)
             {
@@ -177,7 +184,7 @@ namespace SS.UI
 
             if (prefab != null)
             {
-                var type = GetAssemblyType(sceneName + "Controller");
+                var type = GetAssemblyType(screenName + "Controller");
 
                 prefab.AddComponent(type);
 
@@ -191,10 +198,10 @@ namespace SS.UI
 
         void CreateController()
         {
-            string targetRelativePath = System.IO.Path.Combine(sceneDirectoryPath, sceneName + "/" + sceneName + "Controller.cs");
+            string targetRelativePath = System.IO.Path.Combine(screenDirectoryPath, screenName + "/" + screenName + "Controller.cs");
             string targetFullPath = SS.IO.File.Copy("ScreenTemplateController.cs", targetRelativePath);
 
-            SS.IO.File.ReplaceFileContent(targetFullPath, "ScreenTemplate", sceneName);
+            SS.IO.File.ReplaceFileContent(targetFullPath, "ScreenTemplate", screenName);
 
             controllerPath = SS.IO.Path.GetRelativePathWithAssets(targetRelativePath);
 
@@ -203,12 +210,12 @@ namespace SS.UI
 
         void CreateScene()
         {
-            string targetRelativePath = System.IO.Path.Combine(sceneDirectoryPath, sceneName + "/" + sceneName + ".unity");
+            string targetRelativePath = System.IO.Path.Combine(screenDirectoryPath, screenName + "/" + screenName + ".unity");
             string targetFullPath = SS.IO.File.Copy("ScreenTemplate.unity", targetRelativePath);
 
-            scenePath = SS.IO.Path.GetRelativePathWithAssets(targetRelativePath);
+            screenPath = SS.IO.Path.GetRelativePathWithAssets(targetRelativePath);
 
-            AssetDatabase.ImportAsset(scenePath);
+            AssetDatabase.ImportAsset(screenPath);
 
             SS.Tool.Scene.OpenScene(targetFullPath);
         }
@@ -244,6 +251,41 @@ namespace SS.UI
                     return type;
             }
             return null;
+        }
+
+        bool CreateAsset()
+        {
+            string targetRelativePath = System.IO.Path.Combine(screenResourcePath, screenName + ".asset");
+            string targetFullPath = SS.IO.File.Copy("ScreenTemplate.asset", targetRelativePath);
+
+            if (targetFullPath == null)
+            {
+                return false;
+            }
+
+            SS.IO.File.ReplaceFileContent(targetFullPath, "ScreenTemplate", screenName);
+
+            assetPath = SS.IO.Path.GetRelativePathWithAssets(targetRelativePath);
+
+            AssetDatabase.ImportAsset(assetPath);
+
+            return true;
+        }
+
+        void SetupAsset()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<ScreenReference>(assetPath);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+
+            if (asset != null)
+            {
+                asset.ScreenPrefab = prefab;
+
+                EditorUtility.SetDirty(asset);
+                AssetDatabase.SaveAssets();
+            }
+
+            AssetDatabase.ImportAsset(assetPath);
         }
     }
 }

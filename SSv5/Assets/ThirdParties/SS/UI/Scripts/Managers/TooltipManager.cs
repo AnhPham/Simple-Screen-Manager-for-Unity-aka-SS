@@ -70,7 +70,7 @@ namespace SS.UI
                 }
             });
 #else
-            var tooltipPrefab = Resources.Load<GameObject>(Path.Combine(_tooltipPath, _tooltipName));
+            var tooltipPrefab = Resources.Load<ScreenReference>(Path.Combine(_tooltipPath, _tooltipName)).ScreenPrefab;
             CreateAndShowTooltip(tooltipPrefab, text, worldPosition, targetY);
 #endif
         }
