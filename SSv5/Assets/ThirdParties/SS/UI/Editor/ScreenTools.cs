@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+#if ADDRESSABLE
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+#endif
 
 public static class ScreenTools
 {
