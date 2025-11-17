@@ -31,11 +31,7 @@ namespace SS.UI
         protected Scene _lastLoadedScene;
         protected GameObject _sceneLoading;
         protected ISceneLoading _sceneLoadingInterface;
-#if ADDRESSABLE_SCENE
-        protected UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationHandle<UnityEngine.ResourceManagement.ResourceProviders.SceneInstance> _asyncOperation;
-#else
         protected AsyncOperation _asyncOperation;
-#endif
         protected float _loadingTime;
         #endregion
 
@@ -72,10 +68,7 @@ namespace SS.UI
         #region Events
         protected virtual void OnSceneUnloaded(Scene scene)
         {
-#if ADDRESSABLE_SCENE
-#else
             BackgroundCamera.gameObject.SetActive(true);
-#endif
         }
 
         protected virtual void OnActiveSceneChanged(Scene scene1, Scene scene2)
@@ -114,14 +107,7 @@ namespace SS.UI
             if (mode == LoadSceneMode.Single)
             {
                 // Reset variables
-#if ADDRESSABLE_SCENE
-                if (_asyncOperation.IsValid())
-                {
-                    yield return UnityEngine.AddressableAssets.Addressables.UnloadSceneAsync(_asyncOperation.Result, true);
-                }
-#else
-                _asyncOperation = null;
-#endif      
+                _asyncOperation = null;  
                 _loadingTime = 0;
                 AsyncOperationProgress = 0;
 
@@ -160,32 +146,6 @@ namespace SS.UI
                 LoadAsyncOperationScene(sceneName, mode, isDefaultLoading, onSceneLoaded);
 
                 // While loading
-#if ADDRESSABLE_SCENE
-                if (isDefaultLoading)
-                {
-                    while (!IsAsyncOperationDone())
-                    {
-                        // For default loading, update the real progress each frame
-                        AsyncOperationProgress = GetAsyncOperationProgress();
-                        
-                        yield return null;
-                    }
-                }
-                else
-                {
-                    while (!IsAsyncOperationDone() || _loadingTime < _loadingMinDuration)
-                    {
-                        _loadingTime += Time.deltaTime;
-                        AsyncOperationProgress = _loadingTime / _loadingMinDuration < GetAsyncOperationProgress() ? _loadingTime / _loadingMinDuration : GetAsyncOperationProgress();
-
-                        yield return null;
-                    }
-
-                    yield return _asyncOperation.Result.ActivateAsync();
-
-                    onSceneLoaded?.Invoke(GetSceneComponent<T>(_lastLoadedScene));
-                }
-#else
                 while (!IsAsyncOperationDone())
                 {
                     if (isDefaultLoading)
@@ -200,7 +160,6 @@ namespace SS.UI
                     }
                     yield return null;
                 }
-#endif
 
                 // Loading done, 100%
                 AsyncOperationProgress = 1f;
@@ -245,20 +204,9 @@ namespace SS.UI
         {
             if (_sceneLoading == null)
             {
-#if ADDRESSABLE
-                var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(_sceneLoadingName);
-                async.Completed += (a => {
-                    if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                    {
-                        CreateSceneLoading(async.Result);
-                        ShowSceneLoading();
-                    }
-                });
-#else
                 var prefab = Resources.Load<ScreenReference>(Path.Combine(_sceneLoadingPath, _sceneLoadingName)).ScreenPrefab;
                 CreateSceneLoading(prefab);
                 ShowSceneLoading();
-#endif
             }
             else
             {
@@ -364,67 +312,27 @@ namespace SS.UI
 
         protected virtual void LoadAsyncOperationScene<T>(string sceneName, LoadSceneMode loadSceneMode, bool activateOnLoad, OnSceneLoad<T> onSceneLoaded = null) where T : Component
         {
-#if ADDRESSABLE_SCENE
-            _asyncOperation = UnityEngine.AddressableAssets.Addressables.LoadSceneAsync(sceneName, loadSceneMode, activateOnLoad);
-            if (activateOnLoad)
-            {
-                _asyncOperation.Completed += (asyncOp) =>
-                {
-                    onSceneLoaded?.Invoke(GetSceneComponent<T>(_lastLoadedScene));
-                };
-            }
-#else
             _asyncOperation = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName, loadSceneMode);
             _asyncOperation.allowSceneActivation = activateOnLoad;
             _asyncOperation.completed += (asyncOp) =>
             {
                 onSceneLoaded?.Invoke(GetSceneComponent<T>(_lastLoadedScene));
-            };
-#endif        
+            };  
         }
 
         protected virtual bool IsAsyncOperationDone()
         {
-#if ADDRESSABLE_SCENE
-            if (_asyncOperation.IsValid())
-            {
-                return _asyncOperation.IsDone;
-            }
-            else
-            {
-                return false;
-            }
-#else
-            return _asyncOperation.isDone;
-#endif            
+            return _asyncOperation.isDone;         
         }
 
         protected virtual float GetAsyncOperationProgress()
         {
-#if ADDRESSABLE_SCENE
-            if (_asyncOperation.IsValid())
-            {
-                return _asyncOperation.PercentComplete;
-            }
-            else
-            {
-                return 0;
-            }
-#else
-            return _asyncOperation.progress;
-#endif            
+            return _asyncOperation.progress;       
         }
 
         protected virtual void ActivateAsyncOperationScene()
         {
-#if ADDRESSABLE_SCENE
-            if (_asyncOperation.IsValid())
-            {
-                _asyncOperation.Result.ActivateAsync();
-            }
-#else
-            _asyncOperation.allowSceneActivation = true;
-#endif            
+            _asyncOperation.allowSceneActivation = true;    
         }
         #endregion
     }

@@ -61,20 +61,9 @@ namespace SS.UI
                 {
                     if (_loadingObject == null)
                     {
-#if ADDRESSABLE
-                        var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(_loadingName);
-                        async.Completed += (a => {
-                            if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                            {
-                                CreateLoading(async.Result);
-                                ShowLoading(timeout);
-                            }
-                        });
-#else
                         var prefab = Resources.Load<ScreenReference>(Path.Combine(_loadingPath, _loadingName)).ScreenPrefab;
                         CreateLoading(prefab);
                         ShowLoading(timeout);
-#endif
                     }
                     else
                     {

@@ -497,20 +497,9 @@ namespace SS.UI
 
         protected virtual void HandleNewScreen<T>(string fromScreen, string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, bool destroyTopScreen = false, ShieldController shield = null, float shieldAlpha = -1, bool ignoreOnScreenAdded = false) where T : Component
         {
-#if ADDRESSABLE
-            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(screenName);
-            async.Completed += (a => {
-                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                {
-                    var screen = CreateScreen<T>(async.Result, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, shieldAlpha);
-                    HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield, ignoreOnScreenAdded);
-                }
-            });
-#else
             var screenRef = Resources.Load<ScreenReference>(Path.Combine(_screenPath, screenName));
             var screen = CreateScreen<T>(screenRef.ScreenPrefab, screenName, showAnimation, hideAnimation, animationObjectName, onScreenLoad, hasShield, shieldAlpha);
             HandleOnScreenLoaded(screenName, fromScreen, manually, destroyTopScreen, hasShield, screen, shield, ignoreOnScreenAdded);
-#endif
         }
 
         protected virtual void OnScreenLoadEnd()

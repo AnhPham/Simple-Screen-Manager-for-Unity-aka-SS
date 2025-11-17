@@ -61,18 +61,8 @@ namespace SS.UI
                 return;
             }
 
-#if ADDRESSABLE
-            var async = UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<GameObject>(_tooltipName);
-            async.Completed += (a => {
-                if (a.Status == UnityEngine.ResourceManagement.AsyncOperations.AsyncOperationStatus.Succeeded)
-                {
-                    CreateAndShowTooltip(async.Result, text, worldPosition, targetY);
-                }
-            });
-#else
             var tooltipPrefab = Resources.Load<ScreenReference>(Path.Combine(_tooltipPath, _tooltipName)).ScreenPrefab;
             CreateAndShowTooltip(tooltipPrefab, text, worldPosition, targetY);
-#endif
         }
 
         public virtual void HideTooltipImmediately()
