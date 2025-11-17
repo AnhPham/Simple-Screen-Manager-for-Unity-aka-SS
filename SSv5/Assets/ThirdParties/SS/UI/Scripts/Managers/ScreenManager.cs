@@ -65,6 +65,7 @@ namespace SS.UI
         public delegate void OnScreenAddedDelegate(string toScreen, string fromScreen, bool manually);
         public delegate void OnScreenChangedDelegate(int screenCount);
         public delegate bool AddConditionDelegate();
+        public delegate IEnumerator OnScreenPreLoadDelegate();
 
         public OnScreenAddedDelegate OnScreenAdded;
         public OnScreenChangedDelegate OnScreenChanged;
@@ -267,7 +268,7 @@ namespace SS.UI
             ScreenCoroutines.Clear();
         }
 
-        public virtual IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true, float shieldAlpha = -1, bool ignoreOnScreenAdded = false) where T : Component
+        public virtual IEnumerator AddScreen<T>(string screenName, string showAnimation = "ScaleShow", string hideAnimation = "ScaleHide", string animationObjectName = "", bool useExistingScreen = false, OnScreenLoadDelegate<T> onScreenLoad = null, bool hasShield = true, bool manually = true, AddConditionDelegate addCondition = null, bool waitUntilNoScreen = false, bool destroyTopScreen = false, bool hideTopScreen = true, float shieldAlpha = -1, bool ignoreOnScreenAdded = false, OnScreenPreLoadDelegate onScreenPreLoad = null) where T : Component
         {
             // Wait until the addCondition() return true. This is a custom condition.
             while (addCondition != null && !addCondition()) yield return null;
@@ -277,6 +278,11 @@ namespace SS.UI
 
             // If waitUntilNoScreen is true, wait until no more screen is active or loading
             while (waitUntilNoScreen && (IsAnyScreenLoading() || IsAnyScreenActive())) yield return null;
+
+            if (onScreenPreLoad != null)
+            {
+                yield return onScreenPreLoad();
+            }
 
             // Update loading screen count
             _loadingScreens++;

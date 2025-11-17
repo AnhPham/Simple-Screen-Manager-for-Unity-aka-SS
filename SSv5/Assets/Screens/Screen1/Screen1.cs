@@ -58,7 +58,14 @@ public class Screen1 : MonoBehaviour, IKeyBack, IShieldBehavior
 
         Core.Add<Screen3>(screenName: "Screen3", onScreenLoad: (screen) => {
             screen.Label.text = "Screen3";
-        });
+        }, onScreenPreLoad: Wait1Seconds);
+
+        IEnumerator Wait1Seconds()
+        {
+            Core.Loading(true);
+            yield return new WaitForSeconds(1);
+            Core.Loading(false);
+        }
     }
 
     private bool WaitSpaceKey()
