@@ -89,31 +89,7 @@ Core.Load<Scene1Controller>(sceneName: "Scene1");
 <h2>Advance Usage</h2>
 
 <h3>1. Addressables</h3>
-If you want to use Addressables, you do not need to drag screen prefabs to Resources/Screens
-
-<h4>1.1. Install Addressables package: </h4>
-
-```cs
-From Menu: Window / Package Manager / Unity Registry / Addressables / Install
-```
-
-<h4>1.2. Add this Scripting Define Symbol: ADDRESSABLE</h4>
-
-```cs
-From Menu: Edit / Project Settings / Player / Other Settings / Scripting Define Symbols / + / ADDRESSABLE / Apply
-```
-
-<p align="center">
-  <img width="500px" src="/learn/unity/ss/advance/addressable-symbol.png?raw=true" alt="Demo">
-</p>
-
-<h4>1.3. Add screen prefab to addressables groups  </h4>
-
-Make sure the addressable name is the same as the screen name, not a path to the prefab.
-
-<p align="center">
-  <img width="500px" src="learn/unity/ss/advance/addressable-groups.gif?raw=true" alt="Demo">
-</p>
+From version 2.0.0, we removed Addressables supports for screen prefabs because of duplicate memory problem.
 
 <h3>2. Screen Animations</h3>
 
