@@ -25,6 +25,7 @@ namespace SS.UI
 
         #region Delegate
         public delegate void OnSceneLoad<T>(T t);
+        public delegate IEnumerator OnScenePreLoadDelegate();
         #endregion
 
         #region Protected Member
@@ -91,14 +92,14 @@ namespace SS.UI
             this._sceneLoadingPath = sceneLoadingPath;
         }
 
-        public virtual void LoadScene<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
+        public virtual void LoadScene<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true, OnScenePreLoadDelegate onScenePreLoad = null) where T : Component
         {
-            StartCoroutine(CoLoadScene(sceneName, mode, onSceneLoaded, clearAllScreen));
+            StartCoroutine(CoLoadScene(sceneName, mode, onSceneLoaded, clearAllScreen, onScenePreLoad));
         }
         #endregion
 
         #region protected virtual Functions
-        protected virtual IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true) where T : Component
+        protected virtual IEnumerator CoLoadScene<T>(string sceneName, LoadSceneMode mode, OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreen = true, OnScenePreLoadDelegate onScenePreLoad = null) where T : Component
         {
             // If _sceneLoadingName is null, use a default fading shield. 
             var isDefaultLoading = string.IsNullOrEmpty(_sceneLoadingName);
@@ -140,6 +141,11 @@ namespace SS.UI
                 if (clearAllScreen)
                 {
                     ScreenManager.ClearAllScreens();
+                }
+
+                if (onScenePreLoad != null)
+                {
+                    yield return onScenePreLoad();
                 }
 
                 // Load scene

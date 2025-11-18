@@ -162,13 +162,14 @@ namespace SS.UI
         /// <param name="mode">The load scene mode. Single or Additive</param>
         /// <param name="onSceneLoaded">The callback when the scene is loaded. [IMPORTANT] It is called after the Awake & OnEnable, before the Start.</param>
         /// <param name="clearAllScreens">Clear all screens when the scene is loaded?</param>
-        public static void Load<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, SS.UI.SceneManager.OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreens = true) where T : Component
+        /// <param name="onScenePreLoad">On Scene PreLoad callback. It is an iterator method, useful for loading addressables before showing scene</param>
+        public static void Load<T>(string sceneName, LoadSceneMode mode = LoadSceneMode.Single, SS.UI.SceneManager.OnSceneLoad<T> onSceneLoaded = null, bool clearAllScreens = true, SS.UI.SceneManager.OnScenePreLoadDelegate onScenePreLoad = null) where T : Component
         {
             StopAllAddScreenCoroutines();
 
             if (_sceneManager != null)
             {
-                _sceneManager.LoadScene(sceneName, mode, onSceneLoaded, clearAllScreens);
+                _sceneManager.LoadScene(sceneName, mode, onSceneLoaded, clearAllScreens, onScenePreLoad);
             }
         }
 

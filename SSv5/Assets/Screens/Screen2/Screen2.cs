@@ -15,7 +15,12 @@ public class Screen2 : MonoBehaviour, IKeyBack, IShieldBehavior
         Core.Load<Scene1>(sceneName: "Scene1", mode: LoadSceneMode.Single, onSceneLoaded: (scene1) =>
         {
             scene1.Data = "Scene1...";
-        });
+        }, onScenePreLoad: Wait1Seconds);
+
+        IEnumerator Wait1Seconds()
+        {
+            yield return new WaitForSeconds(1);
+        }
     }
 
     public void OnKeyBack()
