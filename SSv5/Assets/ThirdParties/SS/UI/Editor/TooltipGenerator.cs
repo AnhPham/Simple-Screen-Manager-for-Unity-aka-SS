@@ -262,7 +262,7 @@ namespace SS.UI
 
             if (prefab != null)
             {
-                PrefabUtility.InstantiatePrefab(prefab, FindObjectOfType<Canvas>().transform);
+                PrefabUtility.InstantiatePrefab(prefab, FindAnyObjectByType<Canvas>().transform);
             }
         }
 

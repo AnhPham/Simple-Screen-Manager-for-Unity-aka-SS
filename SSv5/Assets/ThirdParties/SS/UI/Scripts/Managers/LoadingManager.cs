@@ -41,7 +41,7 @@ namespace SS.UI
         {
             DontDestroyOnLoad(gameObject);
 
-            GeneralManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindAnyObjectByType<GeneralManager>();
         }
         #endregion
 

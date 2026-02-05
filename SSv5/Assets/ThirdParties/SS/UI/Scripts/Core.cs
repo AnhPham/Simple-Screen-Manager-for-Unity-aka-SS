@@ -37,37 +37,37 @@ namespace SS.UI
 
             _initialized = true;
 
-            _generalManager = Object.FindObjectOfType<SS.UI.GeneralManager>();
+            _generalManager = Object.FindAnyObjectByType<SS.UI.GeneralManager>();
             if (_generalManager == null)
             {
                 _generalManager = Object.Instantiate(Resources.Load<SS.UI.GeneralManager>(generalManagerPath));
             }
 
-            _screenManager = Object.FindObjectOfType<SS.UI.ScreenManager>();
+            _screenManager = Object.FindAnyObjectByType<SS.UI.ScreenManager>();
             if (_screenManager == null)
             {
                 _screenManager = Object.Instantiate(Resources.Load<SS.UI.ScreenManager>(screenManagerPath));
             }
 
-            _sceneManager = Object.FindObjectOfType<SS.UI.SceneManager>();
+            _sceneManager = Object.FindAnyObjectByType<SS.UI.SceneManager>();
             if (_sceneManager == null)
             {
                 _sceneManager = Object.Instantiate(Resources.Load<SS.UI.SceneManager>(sceneManagerPath));
             }
 
-            _shieldManager = Object.FindObjectOfType<SS.UI.ShieldManager>();
+            _shieldManager = Object.FindAnyObjectByType<SS.UI.ShieldManager>();
             if (_shieldManager == null)
             {
                 _shieldManager = Object.Instantiate(Resources.Load<SS.UI.ShieldManager>(shieldManagerPath));
             }
 
-            _tooltipManager = Object.FindObjectOfType<SS.UI.TooltipManager>();
+            _tooltipManager = Object.FindAnyObjectByType<SS.UI.TooltipManager>();
             if (_tooltipManager == null)
             {
                 _tooltipManager = Object.Instantiate(Resources.Load<SS.UI.TooltipManager>(tooltipManagerPath));
             }
 
-            _loadingManager = Object.FindObjectOfType<SS.UI.LoadingManager>();
+            _loadingManager = Object.FindAnyObjectByType<SS.UI.LoadingManager>();
             if (_loadingManager == null)
             {
                 _loadingManager = Object.Instantiate(Resources.Load<SS.UI.LoadingManager>(loadingManagerPath));

@@ -697,7 +697,7 @@ Core.DestroyAll();
 <h4>9.4. Destroy or Close a specific screen </h4>
 
 ```cs
-var screen1 = FindObjectOfType<Screen1Controller>(true);
+var screen1 = FindAnyObjectByType<Screen1Controller>(true);
 ```
 
 ```cs

@@ -45,7 +45,7 @@ namespace SS.UI
         {
             DontDestroyOnLoad(gameObject);
 
-            GeneralManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindAnyObjectByType<GeneralManager>();
             _transparentTopShield = CreateTransparentTopShield();
         }
         #endregion

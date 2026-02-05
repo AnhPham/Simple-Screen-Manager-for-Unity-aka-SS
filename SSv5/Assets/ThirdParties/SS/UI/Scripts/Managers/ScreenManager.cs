@@ -112,7 +112,7 @@ namespace SS.UI
         protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
-            GeneralManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindAnyObjectByType<GeneralManager>();
         }
 
         protected virtual void Update()

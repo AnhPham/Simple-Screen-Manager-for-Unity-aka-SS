@@ -59,7 +59,7 @@ namespace SS.UI
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
             UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-            GeneralManager = FindObjectOfType<GeneralManager>();
+            GeneralManager = FindAnyObjectByType<GeneralManager>();
 
             SetupCameras();
             SetupCanvases();

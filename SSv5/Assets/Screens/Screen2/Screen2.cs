@@ -30,7 +30,7 @@ public class Screen2 : MonoBehaviour, IKeyBack, IShieldBehavior
 
     public void OnCloseScreen1ButtonTap()
     {
-        var screen1 = FindObjectOfType<Screen1>(true);
+        var screen1 = FindAnyObjectByType<Screen1>(FindObjectsInactive.Include);
 
         if (screen1 != null)
         {
