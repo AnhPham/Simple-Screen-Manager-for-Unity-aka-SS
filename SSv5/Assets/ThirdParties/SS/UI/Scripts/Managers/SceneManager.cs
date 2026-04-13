@@ -255,7 +255,7 @@ namespace SS.UI
 
         protected virtual void SetupCameras()
         {
-            var cameras = FindObjectsOfType<Camera>();
+            var cameras = FindObjectsByType<Camera>(FindObjectsSortMode.None);
 
             for (int i = 0; i < cameras.Length; i++)
             {
@@ -274,7 +274,7 @@ namespace SS.UI
         {
             var screenRatio = (float)UnityEngine.Screen.width / UnityEngine.Screen.height;
 
-            var canvasScalers = FindObjectsOfType<CanvasScaler>(true);
+            var canvasScalers = FindObjectsByType<CanvasScaler>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             for (int i = 0; i < canvasScalers.Length; i++)
             {
                 SetupCanvasScaler(canvasScalers[i], screenRatio);
