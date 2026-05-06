@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace SS.UI
 {
@@ -117,7 +120,7 @@ namespace SS.UI
 
         protected virtual void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (IsEscapePressedThisFrame())
             {
                 HandleEscapeKey();
             }
@@ -125,6 +128,15 @@ namespace SS.UI
         #endregion
 
         #region Escape Key
+        protected virtual bool IsEscapePressedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+            return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+#else
+            return Input.GetKeyDown(KeyCode.Escape);
+#endif
+        }
+
         protected virtual void HandleEscapeKey()
         {
             if (!IsLoadingVisible() && IsAnyScreenActive())
